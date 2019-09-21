@@ -46,3 +46,8 @@ def reformatString(inputString, chars):
   inputString = inputString.lower()
   inputString = ''.join([c for c in inputString if c in chars])
   return inputString
+
+def getNeuronList(neuronsPerLayer, layer, classNeurons, classes):
+  if classNeurons:
+    neuronsPerLayer *= classes
+  return [neuronsPerLayer]*layer

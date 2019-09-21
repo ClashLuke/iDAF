@@ -140,7 +140,6 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     # Compiling and displaying model
     model = compileModel(inp, layer, learningRate, drawModel)
   else:
-    utils.mountDrive()
     utils.getPreviousWeightsFromGDrive(weightFolderName)
     lastUsedModel = utils.getLatestModelName(weightFolderName)
     model = keras.models.load_model(lastUsedModel,custom_objects={'gelu':gelu})

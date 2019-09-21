@@ -35,3 +35,14 @@ def getCharacters(indexIn, classes):
     charDictList = {chars[i]: getListFromChar(chars[i], charDict, classes) for i in range(len(chars))}
   return chars, charDict, charDictList
 
+def reformatString(inputString, chars):
+  """
+  WARNING: This function removes all characters it has no clue about.
+  This includes anything related to numbers as well as most symbols.
+  If those characters are required in any way, do some preproprecessing,
+  such as replacing '1' with 'one'.
+  """
+  inputString = ' '.join(inputString.split())
+  inputString = inputString.lower()
+  inputString = ''.join([c for c in inputString if c in chars])
+  return inputString

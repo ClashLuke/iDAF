@@ -66,7 +66,7 @@ class charnet():
     chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes
-    self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize'])
+    self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize']/self.defaultConfig['kerasEpochsPerEpoch'])
 
     generateCharsInstance = generateCharacters.generateChars(
                                      self.defaultConfig['classes'],
@@ -91,7 +91,7 @@ class charnet():
     inputGenerator = gen.inpGenerator()
     outputGenerator = gen.outGenerator()
     self.model.fit_generator(inputGenerator,
-                    epochs=self.defaultConfig['epochs']*self.defaultConfig['changePerKerasEpoch'],
+                    epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],
                     max_queue_size=2,
                     use_multiprocessing=True,

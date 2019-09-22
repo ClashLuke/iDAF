@@ -75,8 +75,7 @@ class charnet():
                                      self.defaultConfig['outCharCount'],
                                      self.defaultConfig['outputs'],
                                      chars,
-                                     charDictList,
-                                     self.model)
+                                     charDictList)
     gen = textGenerator.generator(self.defaultConfig['batchSize'],
                       datasetString,
                       self.defaultConfig['outputs'],

@@ -75,7 +75,6 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
         layer = keras.layers.Dense(units=1, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(keras.layers.concatenate([inLayers[i-1],inLayers[i]]))
         inLayers[i] = layer
       layer = keras.layers.concatenate(inLayers)
-      #layer = keras.layers.Flatten()(layer)
     else:
       layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
@@ -130,7 +129,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     if repeatInput:
       layerList.append(layer)
     # Hidden layer
-    layer, layerList = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer)
+    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer)
     # Output layer
     n = neuronList[-1]
     layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)

@@ -1,7 +1,7 @@
-import generateCharacters
-import textGenerator
-import modelCreator
-import utils
+import mlp.generateCharacters
+import mlp.textGenerator
+import mlp.modelCreator
+import mlp.utils
 
 import keras
 
@@ -31,9 +31,9 @@ class charnet():
     else:
       print("No config found. Using default config.")
     if self.defaultConfig['charSet'] is None:
-      self.defaultConfig['charSet'] = utils.getChars()
+      self.defaultConfig['charSet'] = mlp.utils.getChars()
     if self.defaultConfig['testString'] is None:
-      self.defaultConfig['testString'] = utils.getTestString()
+      self.defaultConfig['testString'] = mlp.utils.getTestString()
 
   def prepareText(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
@@ -42,13 +42,13 @@ class charnet():
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
       return None
-    chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
+    chars, _, _, _ = mlp.utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
     print("WARNING: if your dataset is larger than 1GB and you have less than 8GiB of available RAM, you will receive a memory error.")
-    datasetString = utils.reformatString(datasetString, chars)
+    datasetString = mlp.utils.reformatString(datasetString, chars)
     return datasetString
 
   def getModel(self):
-    self.model = modelCreator.getModel(**self.defaultConfig)
+    self.model = mlp.modelCreator.getModel(**self.defaultConfig)
 
   def train(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
@@ -57,12 +57,12 @@ class charnet():
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
       return None
-    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
+    chars, charDict, charDictList, classes = mlp.utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes
     self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize'])
 
-    generateCharsInstance = generateCharacters.generateChars(
+    generateCharsInstance = mlp.generateCharacters.generateChars(
                                      self.defaultConfig['classes'],
                                      self.defaultConfig['inputs'],
                                      self.defaultConfig['inputString'],
@@ -71,7 +71,7 @@ class charnet():
                                      chars,
                                      charDictList,
                                      self.model)
-    gen = textGenerator.generator(self.defaultConfig['batchSize'],
+    gen = mlp.textGenerator.generator(self.defaultConfig['batchSize'],
                       datasetString,
                       self.defaultConfig['outputs'],
                       self.defaultConfig['indexIn'],
@@ -93,7 +93,7 @@ class charnet():
                     callbacks=[
     keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
     keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False),
-    generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'])               
+    mlp.generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'])               
                               ],
                    validation_data=outputGenerator,
                    validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)

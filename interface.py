@@ -35,16 +35,17 @@ class charnet():
     if self.defaultConfig['testString'] is None:
       self.defaultConfig['testString'] = utils.getTestString()
 
-  def prepareText(self, datasetFilePath=None, datasetString=None):
+  def prepareText(self, datasetFilePath=None, datasetString=None, prepareText=False):
     if datasetFilePath is not None:
       with open(datasetFilePath, 'r') as datasetFile:
         datasetString = datasetFile.read()
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
-      return None
-    chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
-    print("WARNING: if your dataset is larger than 1GB and you have less than 8GiB of available RAM, you will receive a memory error.")
-    datasetString = utils.reformatString(datasetString, chars)
+      exit()
+    if prepareText:
+      chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
+      print("WARNING: if your dataset is larger than 1GB and you have less than 8GiB of available RAM, you will receive a memory error.")
+      datasetString = utils.reformatString(datasetString, chars)
     return datasetString
 
   def getModel(self):
@@ -98,7 +99,7 @@ class charnet():
                    validation_data=outputGenerator,
                    validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)
 
-  def run(self, datasetFilePath=None, datasetString=None):
-    datasetString = self.prepareText(datasetFilePath, datasetString)
+  def run(self, datasetFilePath=None, datasetString=None, prepareText=True):
+    datasetString = self.prepareText(datasetFilePath, datasetString, prepareText)
     self.getModel()
     self.train(datasetString=datasetString)

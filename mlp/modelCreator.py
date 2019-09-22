@@ -65,7 +65,7 @@ def getInputLayer(splitInputs, layer, inputs, activation, classes, inputDense):
     layer = keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
   return layer
 
-def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense):
+def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer):
   for i in range(layerCount-1):
     n = neuronList[i]
     if splitLayer:
@@ -130,7 +130,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     if repeatInput:
       layerList.append(layer)
     # Hidden layer
-    layer, layerList = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense)
+    layer, layerList = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer)
     # Output layer
     n = neuronList[-1]
     layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)

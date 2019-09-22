@@ -13,7 +13,7 @@ class generator():
     self.charDictList = charDictList
     self.charDict = charDict
     self.classes = classes
-    self.valBegin = self.txtLen*valSplit
+    self.valBegin = int(self.txtLen*valSplit)
     self.changePerKerasEpoch = changePerKerasEpoch
   def inpGenerator(self):
     out = self.inputs+self.outputs

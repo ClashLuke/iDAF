@@ -70,7 +70,7 @@ class charnet():
     generateCharsInstance = generateCharacters.generateChars(
                                      self.defaultConfig['classes'],
                                      self.defaultConfig['inputs'],
-                                     self.defaultConfig['inputString'],
+                                     self.defaultConfig['testString'],
                                      self.defaultConfig['outCharCount'],
                                      self.defaultConfig['outputs'],
                                      chars,

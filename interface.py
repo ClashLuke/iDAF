@@ -15,6 +15,7 @@ class charnet():
              'inputs':60, 'neuronsPerLayer':120, 'layerCount':4, 'epochs': 1,
              'kerasEpochsPerEpoch': 256, 'learningRate':0.005, 'outputs':1,
              'dropout':0.35, 'batchSize': 1024, 'valSplit':0.1, 'verbose': 1,
+             'outCharCount':512,
              'activation':'gelu', 'weightFolderName':'MLP_Weights',
              'testString':None, 'charSet': None}
   model = None

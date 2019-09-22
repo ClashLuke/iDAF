@@ -37,7 +37,7 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
     layer = keras.layers.Flatten()(layer)
   else:
     layer = keras.layers.GaussianDropout(dropout)(inp)
-  return layer
+  return layer, inp
 
 def initialiseList(lenght, initValue, differingValuePosition, differingValue):
   initialList = [initValue]*lenght
@@ -123,7 +123,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
       inp = keras.layers.Input(shape=(inputs,))
       layer = keras.layers.GaussianDropout(dropout)(inp)
     else:
-      layer = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense)
+      layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense)
     layer = getInputLayer(splitInputs, layer, inputs, activation, classes, inputDense)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     if repeatInput:

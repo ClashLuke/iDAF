@@ -25,15 +25,21 @@ def getListFromChar(char, chardict, classes):
   num = chardict[char]
   return [0]*num+[1]+[0]*(classes-1-num)
 
-def getCharacters(indexIn, classes):
+def getChars():
   import string
   chars = string.ascii_lowercase+'.," '
+  return chars
+
+def getCharacterVars(indexIn, chars=None):
+  if chars is None:
+    chars = getChars()
+  classes = len(chars)
   charDict = {chars[i]: i for i in range(len(chars))}
   if indexIn:
-    charDictList = {chars[i]: 1-i/classes/2 for i in range(len(chars))}
+    charDictList = {chars[i]: 1-i/classes/2 for i in range(classes)}
   else:
-    charDictList = {chars[i]: getListFromChar(chars[i], charDict, classes) for i in range(len(chars))}
-  return chars, charDict, charDictList
+    charDictList = {chars[i]: getListFromChar(chars[i], charDict, classes) for i in range(classes)}
+  return chars, charDict, charDictList, classes
 
 def reformatString(inputString, chars):
   """

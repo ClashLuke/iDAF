@@ -46,5 +46,5 @@ class GenerateCharsCallback(tf.keras.callbacks.Callback):
     self.inputString = inputString
     self.inputs = inputs
   def on_epoch_end(self, batch, logs = {}):
-    print(self.generateCharsInstance.genStr(self.inputString, self.model)[self.inputs])
+    print(self.generateCharsInstance.genStr(self.inputString, self.model)[self.inputs:])
     return None

@@ -4,7 +4,7 @@ def mountDrive():
 
 def getDatasetFromGDrive(fileName):
   import os
-  os.system(''.join(['cp "/content/gdrive/My Drive/',fileName,'"']))
+  os.system(''.join(['cp "/content/gdrive/My Drive/',fileName,' ."']))
 
 def getPreviousWeightsFromGDrive(weightFolderName):
   import os

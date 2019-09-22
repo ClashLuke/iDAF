@@ -6,7 +6,7 @@ import utils
 import keras
 
 class charnet():
-  defaultConfig = {'leakyRelu':True, 'batchNorm':True, 'trainNewModel':True,
+  defaultConfig = {'leakyRelu':False, 'batchNorm':True, 'trainNewModel':True,
              'concatPreviousLayers':True, 'repeatInput':True, 'unroll':True,
              'splitInputs':False, 'initialLSTM':False,'inputDense':False,
              'splitLayer':False, 'concatDense':True, 'bidirectional':True,

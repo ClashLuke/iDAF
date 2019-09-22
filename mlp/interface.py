@@ -16,7 +16,7 @@ class charnet():
              'kerasEpochsPerEpoch': 256, 'learningRate':0.005, 'outputs':1,
              'dropout':0.35, 'batchSize': 1024, 'valSplit':0.1, 'verbose': 1,
              'activation':'gelu', 'weightFolderName':'MLP_Weights',
-             'testString':None}
+             'testString':None, 'charSet': None}
   model = None
 
   def __init__(self, config=None, configFilePath=None):
@@ -30,15 +30,19 @@ class charnet():
         self.defaultConfig[key] = value
     else:
       print("No config found. Using default config.")
+    if self.defaultConfig['charSet'] is None:
+      self.defaultConfig['charSet'] = utils.getChars()
+    if self.defaultConfig['testString'] is None:
+      self.defaultConfig['testString'] = utils.getTestString()
 
-  def prepareText(self, datasetFilePath=None, datasetString=None, charSet=None):
+  def prepareText(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
       with open(datasetFilePath, 'r') as datasetFile:
         datasetString = datasetFile.read()
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
       return None
-    chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],charSet)
+    chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
     print("WARNING: if your dataset is larger than 1GB and you have less than 8GiB of available RAM, you will receive a memory error.")
     datasetString = utils.reformatString(datasetString, chars)
     return datasetString
@@ -46,14 +50,14 @@ class charnet():
   def getModel(self):
     self.model = modelCreator.getModel(**self.defaultConfig)
 
-  def train(self, datasetFilePath=None, datasetString=None, charSet=None):
+  def train(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
       with open(datasetFilePath, 'r') as datasetFile:
         datasetString = datasetFile.read()
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
       return None
-    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],charSet)
+    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes
     self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize'])
@@ -94,7 +98,7 @@ class charnet():
                    validation_data=outputGenerator,
                    validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)
 
-  def run(self, datasetFilePath=None, datasetString=None, charSet=None):
-    datasetString = self.prepareText(datasetFilePath, datasetString, charSet)
+  def run(self, datasetFilePath=None, datasetString=None):
+    datasetString = self.prepareText(datasetFilePath, datasetString)
     self.getModel()
-    self.train(datasetString=datasetString, charSet=charSet)
+    self.train(datasetString=datasetString)

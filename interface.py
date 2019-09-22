@@ -51,6 +51,10 @@ class charnet():
   def getModel(self):
     self.model = modelCreator.getModel(**self.defaultConfig)
 
+  def getDatasetFromGDrive(self, datasetFileName):
+    utils.mountDrive()
+    utils.getDatasetFromGDrive(datasetFileName)
+
   def train(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
       with open(datasetFilePath, 'r') as datasetFile:

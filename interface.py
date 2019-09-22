@@ -103,7 +103,9 @@ class charnet():
                    validation_data=outputGenerator,
                    validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)
 
-  def run(self, datasetFilePath=None, datasetString=None, prepareText=True):
+  def run(self, datasetFilePath=None, datasetString=None, prepareText=True, fromGDrive=False):
+    if fromGDrive and datasetFilePath is not None:
+      self.getDatasetFromGDrive(datasetFilePath)
     datasetString = self.prepareText(datasetFilePath, datasetString, prepareText)
     self.getModel()
     self.train(datasetString=datasetString)

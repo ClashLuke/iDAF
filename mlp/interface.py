@@ -1,0 +1,100 @@
+import generateCharacters
+import textGenerator
+import modelCreator
+import utils
+
+import keras
+
+class charnet():
+  defaultConfig = {'leakyRelu':True, 'batchNorm':True, 'trainNewModel':True,
+             'concatPreviousLayers':True, 'repeatInput':True, 'unroll':True,
+             'splitInputs':False, 'initialLSTM':False,'inputDense':False,
+             'splitLayer':False, 'concatDense':True, 'bidirectional':True,
+             'concatBeforeOutput':True, 'drawModel':True, 'gpu':True, 
+             'neuronList':None, 'indexIn':False, 'classNeurons':True,
+             'inputs':60, 'neuronsPerLayer':120, 'layerCount':4, 'epochs': 1,
+             'kerasEpochsPerEpoch': 256, 'learningRate':0.005, 'outputs':1,
+             'dropout':0.35, 'batchSize': 1024, 'valSplit':0.1, 'verbose': 1,
+             'activation':'gelu', 'weightFolderName':'MLP_Weights',
+             'testString':None}
+  model = None
+
+  def __init__(self, config=None, configFilePath=None):
+    if configFilePath is not None:
+      import json
+      with open(configFilePath,'r') as configFile:
+        config = configFile.read()
+      config = json.loads(config)
+    if config is not None:
+      for key, value in config.items():
+        self.defaultConfig[key] = value
+    else:
+      print("No config found. Using default config.")
+
+  def prepareText(self, datasetFilePath=None, datasetString=None, charSet=None):
+    if datasetFilePath is not None:
+      with open(datasetFilePath, 'r') as datasetFile:
+        datasetString = datasetFile.read()
+    if datasetString is None:
+      print("FATAL: No dataset given. Exiting.")
+      return None
+    chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],charSet)
+    print("WARNING: if your dataset is larger than 1GB and you have less than 8GiB of available RAM, you will receive a memory error.")
+    datasetString = utils.reformatString(datasetString, chars)
+    return datasetString
+
+  def getModel(self):
+    self.model = modelCreator.getModel(**self.defaultConfig)
+
+  def train(self, datasetFilePath=None, datasetString=None, charSet=None):
+    if datasetFilePath is not None:
+      with open(datasetFilePath, 'r') as datasetFile:
+        datasetString = datasetFile.read()
+    if datasetString is None:
+      print("FATAL: No dataset given. Exiting.")
+      return None
+    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],charSet)
+
+    self.defaultConfig['classes'] = classes
+    self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize'])
+
+    generateCharsInstance = generateCharacters.generateChars(
+                                     self.defaultConfig['classes'],
+                                     self.defaultConfig['inputs'],
+                                     self.defaultConfig['inputString'],
+                                     self.defaultConfig['outCharCount'],
+                                     self.defaultConfig['outputs'],
+                                     chars,
+                                     charDictList,
+                                     self.model)
+    gen = textGenerator.generator(self.defaultConfig['batchSize'],
+                      datasetString,
+                      self.defaultConfig['outputs'],
+                      self.defaultConfig['indexIn'],
+                      self.defaultConfig['inputs'],
+                      self.defaultConfig['steps'],
+                      charDictList,
+                      charDict,
+                      self.defaultConfig['classes'],
+                      self.defaultConfig['valSplit'],
+                      self.defaultConfig['changePerKerasEpoch'])
+    inputGenerator = gen.inpGenerator()
+    outputGenerator = gen.outGenerator()
+    self.model.fit_generator(inputGenerator,
+                    epochs=self.defaultConfig['epochs']*self.defaultConfig['changePerKerasEpoch'],
+                    verbose=self.defaultConfig['verbose'],
+                    max_queue_size=2,
+                    use_multiprocessing=True,
+                    steps_per_epoch=self.defaultConfig['steps'],
+                    callbacks=[
+    keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
+    keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False),
+    generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'])               
+                              ],
+                   validation_data=outputGenerator,
+                   validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)
+
+  def run(self, datasetFilePath=None, datasetString=None, charSet=None):
+    datasetString = self.prepareText(datasetFilePath, datasetString, charSet)
+    self.getModel()
+    self.train(datasetString=datasetString, charSet=charSet)

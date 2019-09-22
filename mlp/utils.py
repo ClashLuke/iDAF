@@ -57,3 +57,19 @@ def getNeuronList(neuronsPerLayer, layer, classNeurons, classes):
   if classNeurons:
     neuronsPerLayer *= classes
   return [neuronsPerLayer]*layer
+
+def getTestString(charSet=None):
+  testString = """You then insert the tool into the holes evident on the blinkie's surface.  The
+location of the hole depends on the color of the blinkie (and manufacturer).
+The blue blinkie commonly found in wealthy suburban areas is disabled by
+inserting the tool into the hole directly in the middle of the blinkie's body.
+You should hear a "click" and the blinkie will cease to function.  The red
+blinkie commonly found in highway construction sights uses the offset hole
+located in either the upper hand right or left of the blinkie's body.  You will
+NOT hear a click with the red one because it uses a slide switch instead of a
+pushbutton one.  Again, the blinkie will turn off.  Yellow and black blinkies
+turn off in a similar way as the red ones."""
+  if charSet is None:
+    charSet = getChars()
+  testString = reformatString(testString, charSet)
+  return testString

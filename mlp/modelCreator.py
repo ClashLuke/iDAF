@@ -1,5 +1,4 @@
-
-import utils
+import CharNet.mlp.utils as utils
 import keras
 import numpy as np
 import tensorflow as tf

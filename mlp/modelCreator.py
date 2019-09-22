@@ -110,7 +110,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              neuronList=None, indexIn=False, classNeurons=True,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
-             activation='gelu', weightFolderName='MLP_Weights'):
+             activation='gelu', weightFolderName='MLP_Weights', **kwargs):
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:

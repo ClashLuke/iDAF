@@ -1,17 +1,22 @@
-# CharNet
- A generative neural network for artificial text and character generation
+## CharNet
+
+A generative neural network for artificial text and character generation
 
 ### General
-CharNet is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) network using a feed-forward network where each layer receives all previous layers as inputs. <br>
-CharNet acts as a humanly-readable example to show improvements compared to common multilayer perceptron models and RNNs for sequential data. <br>
-Various parameters are supported, most of them being switches, you can try to configure your own model. <br>
+
+CharNet is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) network using a feed-forward network where each layer receives all previous layers as inputs.\
+CharNet acts as a humanly-readable example to show improvements compared to common multilayer perceptron models and RNNs for sequential data.\
+Various parameters are supported, most of them being switches, you can try to configure your own model.\
 To get started, clone this repository, import the charnet and execute it with your configuration. For a more in-depth tutorial, you can also follow the notebook in [here](https://github.com/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb) or execute the notebook using a Cloud-GPU at Google Colaboratory.
 
-A 3GB example dataset created out of all books found on the [full books site](http://www.fullbooks.com/) can be downloaded in [here](https://drive.google.com/file/d/1oBe5jVnk9PrOIitnD2B02-8fSQyxxT0R/view?usp=sharing).<br>
-A 500MB dataset based on the data from [textfiles](http://www.textfiles.com/directory.html) can be downloaded in [here](https://drive.google.com/file/d/1e4NZNhKqZCqzapnDgqYdEM02gzx81ZsW/view?usp=sharing). This dataset is significantly more noisy.<br>
-Both datasets have been formatted to use a [minimalistic character set](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30).<br>
+A 3GB example dataset created out of all books found on the [full books site](http://www.fullbooks.com/) can be downloaded in [here](https://drive.google.com/file/d/1oBe5jVnk9PrOIitnD2B02-8fSQyxxT0R/view?usp=sharing).\
+A 500MB dataset based on the data from [textfiles](http://www.textfiles.com/directory.html) can be downloaded in [here](https://drive.google.com/file/d/1e4NZNhKqZCqzapnDgqYdEM02gzx81ZsW/view?usp=sharing). This dataset is significantly more noisy.\
+Both datasets have been formatted to use a [minimalistic character set](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30).\
+A third, significantly smaller dataset, is a dataset containing all tweets by Donald Trump, as seen in [here](http://www.trumptwitterarchive.com/archive). Its only 5 Megabytes, contains links and is not formatted yet. It can be found in [here](https://drive.google.com/file/d/1GifcAh7D2puKgu2k4oapmrDGetdoWfFC/view?usp=sharing).\
 It is recommended to copy those datasets to your google drive to then use them in [Google Colab](https://colab.research.google.com/) if you are looking to try this project out.
+
 ### Parameters
+
 | Parameter name    | Description                                                                                                                                                                                                                                                                     | Datatype | Default value |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ------------- |
 | **leakyReLU**     | [LeakyReLU](https://github.com/keras-team/keras/blob/master/keras/layers/advanced_activations.py#L19) is a rectifier function which can be used as an activation layer. See [this](https://miro.medium.com/max/1025/1*ypsvQH7kvtI2BhzR2eT_Sw.png) graphic for more information. | Boolean     | False         |
@@ -49,9 +54,11 @@ It is recommended to copy those datasets to your google drive to then use them i
 |**charSet**|A set of characters used in the text used as input. Leaving at None will make the network assume it is [this](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30) char set. A text can be formatted to this format by passing `prepareText=True` to your charnet instance or explicitly calling `charnet.prepareText()`. |String|None|
 
 ### Todo
+
 - [x] Explain parameters
 - [x] Make code humanly readable
 - [x] Add config dict instead of enforcing parameters to be assigned
 - [x] Create Notebooks to link to
-- [ ] Add link to example dataset
+- [x] Add link to example datasets
+- [ ] Add proper example showing most interface functions using the trump dataset as an example.
 - [ ] Add example output

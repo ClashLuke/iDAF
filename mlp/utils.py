@@ -14,7 +14,7 @@ def getLatestModelName(weightFolderName):
   import os
   all_files = [(name, os.path.getmtime(''.join(['./',weightFolderName,'/',name]))) for name in os.listdir(''.join(['./',weightFolderName,'/']))]
   latest_uploaded_file = sorted(all_files, key=lambda x: -x[1])[0][0]
-  return ''.join('./',weightFolderName,'/',latest_uploaded_file)
+  return ''.join(['./',weightFolderName,'/',latest_uploaded_file])
 
 def readDataset(fileName):
   with open(fileName,'r') as f:

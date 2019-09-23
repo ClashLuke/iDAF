@@ -79,7 +79,7 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
       layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layerList.append(layer)
-    if concatDense:
+    if concatDense and len(layerList) > 1:
       layer = keras.layers.concatenate(layerList)
   return layerList, layer
 

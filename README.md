@@ -1,6 +1,6 @@
 ## CharNet
 
-A generative neural network for artificial text and character generation
+A multi-layer perceptron network for artificial text and character generation
 
 ### General
 

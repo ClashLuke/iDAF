@@ -6,19 +6,21 @@ import CharNet.mlp.utils as utils
 import keras
 
 class charnet():
-  defaultConfig = {'leakyRelu':False, 'batchNorm':True, 'trainNewModel':True,
-             'concatPreviousLayers':True, 'repeatInput':True, 'unroll':True,
-             'splitInputs':False, 'initialLSTM':False,'inputDense':False,
-             'splitLayer':False, 'concatDense':True, 'bidirectional':True,
-             'concatBeforeOutput':True, 'drawModel':True, 'gpu':True, 
-             'neuronList':None, 'indexIn':False, 'classNeurons':True,
-             'inputs':60, 'neuronsPerLayer':120, 'layerCount':4, 'epochs': 1,
-             'kerasEpochsPerEpoch': 256, 'learningRate':0.005, 'outputs':1,
-             'dropout':0.35, 'batchSize': 1024, 'valSplit':0.1, 'verbose': 1,
-             'outCharCount':512, 'changePerKerasEpoch': 0.25,
-             'activation':'gelu', 'weightFolderName':'MLP_Weights',
+  defaultConfig = {'leakyRelu': False, 'batchNorm': True, 'trainNewModel': True,
+             'concatPreviousLayers': True, 'repeatInput': True, 'unroll': True,
+             'splitInputs': False, 'initialLSTM': False,'inputDense': False,
+             'splitLayer': False, 'concatDense': True, 'bidirectional': True,
+             'concatBeforeOutput': True, 'drawModel': True, 'gpu': True, 
+             'neuronList': None, 'indexIn': False, 'classNeurons': True,
+             'inputs': 60, 'neuronsPerLayer': 120, 'layerCount':4, 'epochs': 1,
+             'kerasEpochsPerEpoch': 256, 'learningRate': 0.005, 'outputs': 1,
+             'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,
+             'outCharCount': 512, 'changePerKerasEpoch': 0.25,
+             'activation': 'gelu', 'weightFolderName': 'MLP_Weights',
              'inputGenerator': 'text', 'outputGenerator': 'text',
-             'testString':None, 'charSet': None}
+             'loss': 'sparse_categorical_crossentropy', 'outputActivation': 'softmax',
+             'metric': 'sparse_categorical_accuracy',
+             'testString': None, 'charSet': None}
   model = None
 
   def __init__(self, config=None, configFilePath=None):

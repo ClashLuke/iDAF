@@ -83,18 +83,18 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
       layer = keras.layers.concatenate(layerList)
   return layerList, layer
 
-def getOutput(layer, concatBeforeOutput, layerList, outputs, classes):
+def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation):
   if concatBeforeOutput:
     layer = keras.layers.concatenate(layerList+[layer])
-  layer = keras.layers.Dense(units=outputs*classes, activation='softmax', kernel_initializer=keras.initializers.lecun_normal())(layer)
+  layer = keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=keras.initializers.lecun_normal())(layer)
 
   if outputs > 1:
     layer = keras.layers.Reshape((outputs,classes))(layer)
   return layer
 
-def compileModel(inp, layer, learningRate, drawModel):
+def compileModel(inp, layer, learningRate, drawModel, loss, metric):
   model = keras.models.Model(inputs=[inp],outputs=[layer])
-  model.compile(loss='sparse_categorical_crossentropy', optimizer=keras.optimizers.Adam(decay=2**-20,lr=learningRate), metrics=['sparse_categorical_accuracy'])
+  model.compile(loss=loss, optimizer=keras.optimizers.Adam(decay=2**-20,lr=learningRate), metrics=[metric])
   model.summary()
   if drawModel:
     keras.utils.plot_model(model, to_file='model.png')
@@ -108,7 +108,9 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              neuronList=None, indexIn=False, classNeurons=True,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
-             activation='gelu', weightFolderName='MLP_Weights', **kwargs):
+             activation='gelu', weightFolderName='MLP_Weights', 
+             outputActivation='softmax', loss='sparse_categorical_crossentropy',
+             metric='sparse_categorical_accuracy',**kwargs):
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:
@@ -134,9 +136,9 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     n = neuronList[-1]
     layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
-    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes)
+    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation)
     # Compiling and displaying model
-    model = compileModel(inp, layer, learningRate, drawModel)
+    model = compileModel(inp, layer, learningRate, drawModel, loss, metric)
   else:
     utils.getPreviousWeightsFromGDrive(weightFolderName)
     lastUsedModel = utils.getLatestModelName(weightFolderName)

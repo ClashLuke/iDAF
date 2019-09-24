@@ -13,6 +13,7 @@ A 3GB example dataset created out of all books found on the [full books site](ht
 A 500MB dataset based on the data from [textfiles](http://www.textfiles.com/directory.html) can be downloaded in [here](https://drive.google.com/file/d/1e4NZNhKqZCqzapnDgqYdEM02gzx81ZsW/view?usp=sharing). This dataset is significantly more noisy.\
 Both datasets have been formatted to use a [minimalistic character set](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30).\
 A third, significantly smaller dataset, is a dataset containing all tweets by Donald Trump, as seen in [here](http://www.trumptwitterarchive.com/archive). Its only 5 Megabytes, contains links and is not formatted yet. It can be found in [here](https://drive.google.com/file/d/1GifcAh7D2puKgu2k4oapmrDGetdoWfFC/view?usp=sharing).\
+Lastly there also is a dump of the linux kernel with removed comments which can be found in [here](https://drive.google.com/open?id=1bAVryLcuL0k-BjNZHMinueoznkiZIzUD). It hasnt been formatted either.
 It is recommended to copy those datasets to your google drive to then use them in [Google Colab](https://colab.research.google.com/) if you are looking to try this project out.
 
 ### Parameters

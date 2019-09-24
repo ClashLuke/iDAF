@@ -58,12 +58,13 @@ class charnet():
     utils.getDatasetFromGDrive(datasetFileName)
 
   def train(self, datasetFilePath=None, datasetString=None):
-    if datasetFilePath is not None:
-      with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
-        datasetString = datasetFile.read()
-    if datasetString is None:
-      print("FATAL: No dataset given. Exiting.")
-      return None
+    if self.defaultConfig['inputGenerator'] == 'text':
+      if datasetFilePath is not None:
+        with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
+          datasetString = datasetFile.read()
+      if datasetString is None:
+        print("FATAL: No dataset given. Exiting.")
+        return None
     chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes

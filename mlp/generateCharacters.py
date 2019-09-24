@@ -41,10 +41,15 @@ class generateChars():
     return out
 
 class GenerateCharsCallback(tf.keras.callbacks.Callback):
-  def __init__(self, generateCharsInstance, inputString, inputs):
+  def __init__(self, generateCharsInstance, inputString, inputs, decodeOutput):
     self.generateCharsInstance = generateCharsInstance
     self.inputString = inputString
     self.inputs = inputs
+    self.decodeOutput = decodeOutput
   def on_epoch_end(self, batch, logs = {}):
-    print(self.generateCharsInstance.genStr(self.inputString, self.model)[self.inputs:])
+    if self.decodeOutput:
+      print(self.generateCharsInstance.genStr(self.inputString, self.model)[self.inputs:])
+    else:
+      print(self.model.predict(self.inputString))
+
     return None

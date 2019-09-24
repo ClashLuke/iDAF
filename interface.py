@@ -3,6 +3,8 @@ import CharNet.mlp.textGenerator as textGenerator
 import CharNet.mlp.modelCreator as modelCreator
 import CharNet.mlp.utils as utils
 
+import numpy as np
+import itertools
 import keras
 
 class charnet():
@@ -12,6 +14,7 @@ class charnet():
              'splitLayer': False, 'concatDense': True, 'bidirectional': True,
              'concatBeforeOutput': True, 'drawModel': True, 'gpu': True, 
              'neuronList': None, 'indexIn': False, 'classNeurons': True,
+             'decodeOutput': True,
              'inputs': 60, 'neuronsPerLayer': 120, 'layerCount':4, 'epochs': 1,
              'kerasEpochsPerEpoch': 256, 'learningRate': 0.005, 'outputs': 1,
              'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,
@@ -99,6 +102,10 @@ class charnet():
         outputGenerator = gen.outGenerator()
     else:
         outputGenerator = self.defaultConfig['outputGenerator']
+    if not self.defaultConfig['decodeOutput']:
+      tmp = np.zeros((1,self.defaultConfig['classes']*self.defaultConfig['inputs']))
+      tmp[0][:] = list(itertools.chain.from_iterable([charDictList[self.defaultConfig['testString'][j]] for j in range(self.defaultConfig['inputs'])]))
+      self.defaultConfig['testString'] = tmp
     self.model.fit_generator(inputGenerator,
                     epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],
@@ -108,7 +115,7 @@ class charnet():
                     callbacks=[
     keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
     keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False),
-    generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'])               
+    generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'],self.defaultConfig['decodeOutput'])           
                               ],
                    validation_data=outputGenerator,
                    validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)

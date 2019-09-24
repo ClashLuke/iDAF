@@ -88,14 +88,14 @@ class charnet():
                       self.defaultConfig['classes'],
                       self.defaultConfig['valSplit'],
                       self.defaultConfig['changePerKerasEpoch'])
-    if defaultConfig['inputGenerator'] == 'text':
+    if self.defaultConfig['inputGenerator'] == 'text':
         inputGenerator = gen.inpGenerator()
     else:
-        inputGenerator = defaultConfig['inputGenerator']
-    if defaultConfig['outputGenerator'] == 'text':
+        inputGenerator = self.defaultConfig['inputGenerator']
+    if self.defaultConfig['outputGenerator'] == 'text':
         outputGenerator = gen.outGenerator()
     else:
-        inputGenerator = defaultConfig['outputGenerator']
+        inputGenerator = self.defaultConfig['outputGenerator']
     self.model.fit_generator(inputGenerator,
                     epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],

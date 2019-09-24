@@ -38,7 +38,7 @@ class charnet():
 
   def prepareText(self, datasetFilePath=None, datasetString=None, prepareText=False):
     if datasetFilePath is not None:
-      with open(datasetFilePath, 'r', mode='ignore') as datasetFile:
+      with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
         datasetString = datasetFile.read()
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")
@@ -58,7 +58,7 @@ class charnet():
 
   def train(self, datasetFilePath=None, datasetString=None):
     if datasetFilePath is not None:
-      with open(datasetFilePath, 'r', mode='ignore') as datasetFile:
+      with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
         datasetString = datasetFile.read()
     if datasetString is None:
       print("FATAL: No dataset given. Exiting.")

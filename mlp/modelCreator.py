@@ -86,7 +86,7 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
 def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss):
   if concatBeforeOutput:
     layer = keras.layers.concatenate(layerList+[layer])
-  if 'crossentropy' in loss:
+  if 'crossentropy' not in loss:
     classes = 1
   layer = keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=keras.initializers.lecun_normal())(layer)
 

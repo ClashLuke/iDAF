@@ -83,9 +83,11 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
       layer = keras.layers.concatenate(layerList)
   return layerList, layer
 
-def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation):
+def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss):
   if concatBeforeOutput:
     layer = keras.layers.concatenate(layerList+[layer])
+  if 'crossentropy' in loss:
+    classes = 1
   layer = keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=keras.initializers.lecun_normal())(layer)
 
   if outputs > 1:
@@ -136,7 +138,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     n = neuronList[-1]
     layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
-    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation)
+    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss)
     # Compiling and displaying model
     model = compileModel(inp, layer, learningRate, drawModel, loss, metric)
   else:

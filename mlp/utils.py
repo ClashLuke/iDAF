@@ -17,7 +17,7 @@ def getLatestModelName(weightFolderName):
   return ''.join(['./',weightFolderName,'/',latest_uploaded_file])
 
 def readDataset(fileName):
-  with open(fileName,'r',mode='ignore') as f:
+  with open(fileName,'r',errors='ignore') as f:
     txt = f.read()
   return txt
 

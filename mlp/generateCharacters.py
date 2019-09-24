@@ -31,7 +31,7 @@ class generateChars():
         [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
     ))
     for i in range(self.outCharCount):
-      res = self.genKey(inp[i*30*self.outputs:], model)
+      res = self.genKey(inp[i*self.classes*self.outputs:], model)
       inp = inp+list(itertools.chain.from_iterable([self.charDictList[r] for r in res]))
     return inp
 

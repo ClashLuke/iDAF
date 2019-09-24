@@ -95,7 +95,7 @@ class charnet():
     if self.defaultConfig['outputGenerator'] == 'text':
         outputGenerator = gen.outGenerator()
     else:
-        inputGenerator = self.defaultConfig['outputGenerator']
+        outputGenerator = self.defaultConfig['outputGenerator']
     self.model.fit_generator(inputGenerator,
                     epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],

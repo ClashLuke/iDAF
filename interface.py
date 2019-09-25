@@ -18,7 +18,7 @@ class charnet():
              'inputs': 60, 'neuronsPerLayer': 120, 'layerCount':4, 'epochs': 1,
              'kerasEpochsPerEpoch': 256, 'learningRate': 0.005, 'outputs': 1,
              'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,
-             'outCharCount': 512, 'changePerKerasEpoch': 0.25,
+             'outCharCount': 512, 'changePerKerasEpoch': 0.25, 'steps': 1000,
              'activation': 'gelu', 'weightFolderName': 'MLP_Weights',
              'inputGenerator': 'text', 'outputGenerator': 'text',
              'loss': 'sparse_categorical_crossentropy', 'outputActivation': 'softmax',
@@ -70,10 +70,12 @@ class charnet():
       if datasetString is None:
         print("FATAL: No dataset given. Exiting.")
         return None
+      self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize']/self.defaultConfig['kerasEpochsPerEpoch'])
+
     chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes
-    self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize']/self.defaultConfig['kerasEpochsPerEpoch'])
+    
 
     generateCharsInstance = generateCharacters.generateChars(
                                      self.defaultConfig['classes'],

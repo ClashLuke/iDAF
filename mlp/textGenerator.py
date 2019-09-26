@@ -21,7 +21,6 @@ class generator():
       tmpIn = [None]*self.batchsize
       tmpIn[0] = [self.charDictList[self.txt[j]] for j in range(self.inputs)]
       tmpOut[0] = self.charDict[self.txt[self.inputs]] 
-      yield (np.array(tmpIn), np.array(tmpOut))
       while True:
         for b in range(1,self.batchsize):
           tmpIn[b] = tmpIn[b-1][1:]+[self.charDictList[self.txt[self.inputs+b]]]
@@ -35,7 +34,6 @@ class generator():
       tmpIn[0] = list(itertools.chain.from_iterable(
           [self.charDictList[self.txt[j]] for j in range(self.inputs)]))
       tmpOut[0] = self.charDict[self.txt[self.inputs]] 
-      yield (np.array(tmpIn), np.array(tmpOut))
       while True:
         for b in range(1,self.batchsize):
           tmpIn[b] = tmpIn[b-1][1:]+[self.charDictList[self.txt[self.inputs+b]]]

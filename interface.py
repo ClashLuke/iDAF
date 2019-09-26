@@ -56,8 +56,8 @@ class charnet():
     return datasetString
 
   def getModel(self, modelCompile=True):
-    if config['tpu']:
-      strategy = tf.distribute.TPUStrategy()
+    if self.defaultConfig['tpu']:
+      strategy = tf.distribute.MirroredStrategy()
       with strategy.scope():
         self.model = modelCreator.getModel(**self.defaultConfig,modelCompile=modelCompile)
     else:

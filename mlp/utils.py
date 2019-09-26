@@ -74,11 +74,11 @@ turn off in a similar way as the red ones."""
   testString = reformatString(testString, charSet)
   return testString
 
-def getTfGenerator(pythonGenerator, batchSize):
+def getTfGenerator(pythonGenerator, batchSize, outputs):
   import tensorflow as tf
   tfGenerator = tf.data.Dataset.from_generator(generator=lambda: map(tuple, pythonGenerator),
                                                output_types=(tf.float32,tf.float32),
-                                               output_shapes=(tf.TensorShape((None,)), tf.TensorShape((batchSize, None)))
+                                               output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
                                                )
   tfGenerator = tfGenerator.batch(batchSize)
   tfGenerator = tfGenerator.repeat(batchSize)

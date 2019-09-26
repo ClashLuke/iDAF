@@ -56,7 +56,7 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layerList.append(layer)
     if concatDense and len(layerList) > 1:
-      layer = tf.keras.layers.concatenate(layerList)
+      layer = tf.keras.layers.concatenate(list(layerList))
   return layerList, layer
 
 def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss):

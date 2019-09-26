@@ -5,7 +5,7 @@ import CharNet.mlp.utils as utils
 
 import numpy as np
 import itertools
-import keras
+import tensorflow.python.keras as keras
 
 class charnet():
   defaultConfig = {'leakyRelu': False, 'batchNorm': True, 'trainNewModel': True,

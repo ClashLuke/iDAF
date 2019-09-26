@@ -1,7 +1,7 @@
 import CharNet.mlp.utils as utils
-import keras
 import numpy as np
 import tensorflow as tf
+import os
 
 
 def gelu(x):
@@ -9,34 +9,34 @@ def gelu(x):
 
 def addAdvancedLayers(layer, leakyRelu, batchNorm):
     if batchNorm:
-      layer = keras.layers.BatchNormalization()(layer)
+      layer = tf.keras.layers.BatchNormalization()(layer)
     if leakyRelu:
-      layer = keras.layers.LeakyReLU(0.2)(layer)
+      layer = tf.keras.layers.LeakyReLU(0.2)(layer)
     return layer
 
 def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
                           inputs, unroll, classes, dropout):
-  inp = keras.layers.Input(shape=(inputs*classes,))
+  inp = tf.keras.layers.Input(shape=(inputs*classes,))
   if initialLSTM:
-    layer = keras.layers.Reshape((inputs,classes))(inp)
+    layer = tf.keras.layers.Reshape((inputs,classes))(inp)
     if gpu:
       if bidirectional:
-        layer = keras.layers.Bidirectional(keras.layers.CuDNNLSTM(inputs, kernel_initializer=keras.initializers.lecun_normal(), return_sequences=True))(layer)
+        layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(inputs, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True))(layer)
       else:
-        layer = keras.layers.CuDNNLSTM(inputs, kernel_initializer=keras.initializers.lecun_normal(), return_sequences=True)(layer)
+        layer = tf.keras.layers.CuDNNLSTM(inputs, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True)(layer)
     else:
       if bidirectional:
-        layer = keras.layers.Bidirectional(keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
-                              kernel_initializer=keras.initializers.lecun_normal(),
+        layer = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
+                              kernel_initializer=tf.keras.initializers.lecun_normal(),
                               unroll=unroll, return_sequences=True))(layer)
       else:
-        layer = keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
-                              kernel_initializer=keras.initializers.lecun_normal(),
+        layer = tf.keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
+                              kernel_initializer=tf.keras.initializers.lecun_normal(),
                               unroll=unroll, return_sequences=True)(layer)
-    layer = keras.layers.GaussianDropout(dropout)(layer)
-    layer = keras.layers.Flatten()(layer)
+    layer = tf.keras.layers.GaussianDropout(dropout)(layer)
+    layer = tf.keras.layers.Flatten()(layer)
   else:
-    layer = keras.layers.GaussianDropout(dropout)(inp)
+    layer = tf.keras.layers.GaussianDropout(dropout)(inp)
   return layer, inp
 
 def initialiseList(lenght, initValue, differingValuePosition, differingValue):
@@ -44,76 +44,61 @@ def initialiseList(lenght, initValue, differingValuePosition, differingValue):
   initialList[differingValuePosition] = differingValue
   return initialList
 
-def splitLayer(layer, units, neurons, dimensions, splitAt, activation):
-  end = [-1]*dimensions
-  end[splitAt] = units
-  inLayers = [
-      keras.layers.Dense(units=units, activation=activation,
-                         kernel_initializer=keras.initializers.lecun_normal())(
-                           keras.layers.Lambda(lambda layer: keras.backend.slice(layer,
-                                                                                initialiseList(dimensions, 0, splitAt, i),
-                                                                                end)
-                                                )(layer)
-                            ) for i in range(0,neurons,units)]
-  layer = keras.layers.concatenate(inLayers)
+def getInputLayer(layer, inputs, activation, classes, inputDense):
+  if inputDense:
+    layer = tf.keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
   return layer
 
-def getInputLayer(splitInputs, layer, inputs, activation, classes, inputDense):
-  if splitInputs:
-      splitLayer(layer, classes, inputs, 3, 2, activation)
-  elif inputDense:
-    layer = keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
-  return layer
-
-def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer):
+def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense):
   for i in range(layerCount-1):
     n = neuronList[i]
-    if splitLayer:
-      inLayers = [keras.layers.Lambda( lambda layer: keras.backend.slice(layer, (0, i), (-1, 1)))(layer) for i in range(n)]
-      inLayers = [keras.layers.Dense(units=1, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(inLayers[i]) for i in range(n)]
-      for i in range(n):
-        layer = keras.layers.Dense(units=1, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(keras.layers.concatenate([inLayers[i-1],inLayers[i]]))
-        inLayers[i] = layer
-      layer = keras.layers.concatenate(inLayers)
-    else:
-      layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
+    layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layerList.append(layer)
     if concatDense and len(layerList) > 1:
-      layer = keras.layers.concatenate(layerList)
+      layer = tf.keras.layers.concatenate(layerList)
   return layerList, layer
 
 def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss):
   if concatBeforeOutput:
-    layer = keras.layers.concatenate(layerList+[layer])
+    layer = tf.keras.layers.concatenate(layerList+[layer])
   if 'crossentropy' not in loss:
     classes = 1
-  layer = keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=keras.initializers.lecun_normal())(layer)
+  layer = tf.keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
 
   if outputs > 1:
-    layer = keras.layers.Reshape((outputs,classes))(layer)
+    layer = tf.keras.layers.Reshape((outputs,classes))(layer)
   return layer
 
-def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile):
-  model = keras.models.Model(inputs=[inp],outputs=[layer])
+def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile, tpu):
+  model = tf.keras.Model(inputs=[inp],outputs=[layer])
   if modelCompile:
-    model.compile(loss=loss, optimizer=keras.optimizers.Adam(decay=2**-20,lr=learningRate), metrics=[metric])
+    model.compile(loss=loss, optimizer=tf.train.AdamOptimizer(learning_rate=learningRate), metrics=[metric])
     model.summary()
     if drawModel:
-      keras.utils.plot_model(model, to_file='model.png')
+      tf.keras.utils.plot_model(model, to_file='model.png')
+  if tpu:
+    TPU_WORKER = 'grpc://' + os.environ['COLAB_TPU_ADDR']
+    tf.logging.set_verbosity(tf.logging.INFO)
+
+    model = tf.contrib.tpu.keras_to_tpu_model(
+                                              model=model,
+                                              strategy=tf.contrib.tpu.TPUDistributionStrategy(
+                                                        tf.contrib.cluster_resolver.TPUClusterResolver(TPU_WORKER))
+                                              )
   return model
 
 def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              concatPreviousLayers=True, repeatInput=True, unroll=True,
-             splitInputs=False, initialLSTM=False,inputDense=False,
-             splitLayer=False, concatDense=True, bidirectional=True,
+             initialLSTM=False, inputDense=False, concatDense=True,
+             bidirectional=True, modelCompile=True, tpu=True,
              concatBeforeOutput=True, drawModel=True, gpu=True, 
              neuronList=None, indexIn=False, classNeurons=True,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
              activation='gelu', weightFolderName='MLP_Weights', 
              outputActivation='softmax', loss='sparse_categorical_crossentropy',
-             metric='sparse_categorical_accuracy',modelCompile=True,**kwargs):
+             metric='sparse_categorical_accuracy',**kwargs):
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:
@@ -125,26 +110,26 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     layerList = []
     # Input layer
     if indexIn:
-      inp = keras.layers.Input(shape=(inputs,))
-      layer = keras.layers.GaussianDropout(dropout)(inp)
+      inp = tf.keras.layers.Input(shape=(inputs,))
+      layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
       layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense)
-    layer = getInputLayer(splitInputs, layer, inputs, activation, classes, inputDense)
+    layer = getInputLayer(layer, inputs, activation, classes, inputDense)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     if repeatInput:
       layerList.append(layer)
     # Hidden layer
-    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, splitLayer)
+    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense)
     # Output layer
     n = neuronList[-1]
-    layer = keras.layers.Dense(units=n, activation=activation, kernel_initializer=keras.initializers.lecun_normal())(layer)
+    layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss)
     # Compiling and displaying model
-    model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)
+    model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile, tpu)
   else:
     utils.getPreviousWeightsFromGDrive(weightFolderName)
     lastUsedModel = utils.getLatestModelName(weightFolderName)
-    model = keras.models.load_model(lastUsedModel,custom_objects={'gelu':gelu})
+    model = tf.keras.models.load_model(lastUsedModel,custom_objects={'gelu':gelu})
     model.summary()
   return model

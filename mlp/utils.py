@@ -78,7 +78,7 @@ def getTfGenerator(pythonGenerator, batchSize):
   import tensorflow as tf
   tfGenerator = tf.data.Dataset.from_generator(generator=lambda: map(tuple, pythonGenerator),
                                                output_types=(tf.float32,tf.float32),
-                                               output_shapes=(tf.TensorShape((None, None)), tf.TensorShape((1, )))
+                                               output_shapes=(tf.TensorShape((None, None)), tf.TensorShape((batchSize, None)))
                                                )
   tfGenerator = tfGenerator.batch(batchSize)
   tfGenerator = tfGenerator.repeat(batchSize)

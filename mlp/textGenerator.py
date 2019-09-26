@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 class generator():
-  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, valSplit, changePerKerasEpoch):
+  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, valSplit, changePerKerasEpoch, tpu):
     self.batchsize = batchsize
     self.txt = txt
     self.txtLen = len(txt)
@@ -13,8 +13,8 @@ class generator():
     self.charDictList = charDictList
     self.charDict = charDict
     self.classes = classes
-    self.valBegin = int(self.txtLen*valSplit)
     self.changePerKerasEpoch = changePerKerasEpoch
+    self.tpu = tpu
   def inpGenerator(self):
     out = self.inputs+self.outputs
     inputsTimesClasses = self.inputs*self.classes
@@ -35,7 +35,7 @@ class generator():
               n+=1
             yield (tmpIn, tmpOut)
             ik+=currentBatchsize
-            if ik >= self.valBegin:
+            if ik >= self.txtLen:
               ik = 0
         else:
           for _ in range(self.steps):
@@ -49,9 +49,44 @@ class generator():
               n+=1
             yield (tmpIn, tmpOut)
             ik+=currentBatchsize
-            if ik >= self.valBegin:
+            if ik >= self.txtLen:
               ik = 0
-        currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)
+              
+        if not self.tpu:
+          currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)
+    if self.outputs == 1:
+      while True:
+        tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.float32)
+        tmpOut = np.zeros((currentBatchsize,1),dtype=np.float32)
+        if self.indexIn:
+          for _ in range(self.steps):
+            tmpIn[0][:] = [self.charDictList[self.txt[j]] for j in range(ik,ik+self.inputs)]
+            tmpOut[0] = self.charDict[self.txt[ik+self.inputs]] 
+            n = 0
+            for i in range(1,currentBatchsize):
+              tmpIn[i][:] = np.append(tmpIn[i-1][1:],self.charDictList[self.txt[self.inputs+n+ik]])
+              tmpOut[i] = self.charDict[self.txt[self.inputs+1+n+ik]]
+              n+=1
+            yield (tmpIn, tmpOut)
+            ik+=currentBatchsize
+            if ik >= self.txtLen:
+              ik = 0
+        else:
+          for _ in range(self.steps):
+            tmpIn[0][:] = list(itertools.chain.from_iterable(
+                [self.charDictList[self.txt[j]] for j in range(ik,ik+self.inputs)]))
+            tmpOut[0] = self.charDict[self.txt[ik+self.inputs]] 
+            n = 0
+            for i in range(1,currentBatchsize):
+              tmpIn[i][:] = np.append(tmpIn[i-1][self.classes:],self.charDictList[self.txt[self.inputs+n+ik]])
+              tmpOut[i] = self.charDict[self.txt[self.inputs+1+n+ik]]
+              n+=1
+            yield (tmpIn, tmpOut)
+            ik+=currentBatchsize
+            if ik >= self.txtLen:
+              ik = 0
+        if not self.tpu:
+          currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)
     else:
       while True:
         tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.float32)
@@ -67,7 +102,7 @@ class generator():
               n+=1
             yield (tmpIn, tmpOut)
             ik+=currentBatchsize
-            if ik >= self.valBegin:
+            if ik >= self.txtLen:
               ik = 0
         else:
           for _ in range(self.steps):
@@ -80,7 +115,8 @@ class generator():
               n+=1
             yield (tmpIn, tmpOut)
             ik+=currentBatchsize
-            if ik >= self.valBegin:
+            if ik >= self.txtLen:
               ik = 0
           
-        currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)
+        if not self.tpu:
+          currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)

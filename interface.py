@@ -100,7 +100,8 @@ class charnet():
                       charDict,
                       self.defaultConfig['classes'],
                       self.defaultConfig['valSplit'],
-                      self.defaultConfig['changePerKerasEpoch'])
+                      self.defaultConfig['changePerKerasEpoch'],
+                      self.defaultConfig['tpu'])
     if self.defaultConfig['inputGenerator'] == 'text':
         inputGenerator = gen.inpGenerator()
     else:

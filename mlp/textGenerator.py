@@ -16,7 +16,7 @@ class generator():
     self.changePerKerasEpoch = changePerKerasEpoch
   def inpGenerator(self):
     n = 0
-    tmpOut = np.zeros((1),dtype=np.float32)
+    tmpOut = np.zeros((self.batchsize,1),dtype=np.float32)
     if self.indexIn:
       tmpIn = [None]*self.batchsize
       tmpIn[0] = [self.charDictList[self.txt[j]] for j in range(self.inputs)]
@@ -26,7 +26,7 @@ class generator():
           tmpIn[b] = tmpIn[b-1][1:]+[self.charDictList[self.txt[self.inputs+b]]]
           tmpOut[b][0] = self.charDict[self.txt[self.inputs+1+b]]
         for b in range(self.batchsize):
-          yield (np.array(tmpIn[b]), np.array(tmpOut[b]))
+          yield (np.array(tmpIn[b]), tmpOut[b])
         if n >= self.txtLen:
           n = 0
     else:
@@ -39,6 +39,6 @@ class generator():
           tmpIn[b] = tmpIn[b-1][1:]+[self.charDictList[self.txt[self.inputs+b]]]
           tmpOut[b][0] = self.charDict[self.txt[self.inputs+1+b]]
         for b in range(self.batchsize):
-          yield (np.array(tmpIn[b]), np.array(tmpOut[b]))
+          yield (np.array(tmpIn[b]), tmpOut[b])
         if n >= self.txtLen:
           n = 0

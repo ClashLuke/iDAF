@@ -116,8 +116,7 @@ class charnet():
                     use_multiprocessing=True,
                     steps_per_epoch=self.defaultConfig['steps'],
                     callbacks=[
-    tf.keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
-    tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False),
+    tf.keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
     generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'],self.defaultConfig['decodeOutput'])           
                               ])
 

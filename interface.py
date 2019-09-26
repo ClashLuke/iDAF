@@ -56,7 +56,7 @@ class charnet():
     return datasetString
 
   def getModel(self, modelCompile=True):
-    self.model = modelCreator.getModel(**self.defaultConfig,modelCompile)
+    self.model = modelCreator.getModel(**self.defaultConfig,modelCompile=modelCompile)
 
   def getDatasetFromGDrive(self, datasetFileName):
     utils.mountDrive()

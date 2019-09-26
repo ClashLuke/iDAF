@@ -94,12 +94,13 @@ def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActi
     layer = keras.layers.Reshape((outputs,classes))(layer)
   return layer
 
-def compileModel(inp, layer, learningRate, drawModel, loss, metric):
+def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile):
   model = keras.models.Model(inputs=[inp],outputs=[layer])
-  model.compile(loss=loss, optimizer=keras.optimizers.Adam(decay=2**-20,lr=learningRate), metrics=[metric])
-  model.summary()
-  if drawModel:
-    keras.utils.plot_model(model, to_file='model.png')
+  if modelCompile:
+    model.compile(loss=loss, optimizer=keras.optimizers.Adam(decay=2**-20,lr=learningRate), metrics=[metric])
+    model.summary()
+    if drawModel:
+      keras.utils.plot_model(model, to_file='model.png')
   return model
 
 def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
@@ -112,7 +113,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
              activation='gelu', weightFolderName='MLP_Weights', 
              outputActivation='softmax', loss='sparse_categorical_crossentropy',
-             metric='sparse_categorical_accuracy',**kwargs):
+             metric='sparse_categorical_accuracy',modelCompile=True,**kwargs):
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:
@@ -140,7 +141,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss)
     # Compiling and displaying model
-    model = compileModel(inp, layer, learningRate, drawModel, loss, metric)
+    model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)
   else:
     utils.getPreviousWeightsFromGDrive(weightFolderName)
     lastUsedModel = utils.getLatestModelName(weightFolderName)

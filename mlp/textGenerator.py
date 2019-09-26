@@ -36,7 +36,7 @@ class generator():
       tmpOut[0][0] = self.charDict[self.txt[self.inputs]] 
       while True:
         for b in range(1,self.batchsize):
-          tmpIn[b] = tmpIn[b-1][1:]+[self.charDictList[self.txt[self.inputs+b]]]
+          tmpIn[b] = tmpIn[b-1][self.classes:]+self.charDictList[self.txt[self.inputs+b]]
           tmpOut[b][0] = self.charDict[self.txt[self.inputs+1+b]]
         for b in range(self.batchsize):
           yield (np.array(tmpIn[b]), tmpOut[b])

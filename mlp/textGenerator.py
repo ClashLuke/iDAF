@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 class generator():
-  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, valSplit, changePerKerasEpoch, tpu):
+  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, changePerKerasEpoch):
     self.batchsize = batchsize
     self.txt = txt
     self.txtLen = len(txt)-inputs-2
@@ -14,9 +14,7 @@ class generator():
     self.charDict = charDict
     self.classes = classes
     self.changePerKerasEpoch = changePerKerasEpoch
-    self.tpu = tpu
   def inpGenerator(self):
-    out = self.inputs+self.outputs
     inputsTimesClasses = self.inputs*self.classes
     n = 0
     if self.outputs == 1:

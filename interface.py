@@ -20,7 +20,7 @@ class charnet():
              'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,
              'outCharCount': 512, 'changePerKerasEpoch': 0.25, 'steps': 1000,
              'activation': 'gelu', 'weightFolderName': 'MLP_Weights',
-             'inputGenerator': 'text', 'outputGenerator': 'text',
+             'inputGenerator': 'text',
              'loss': 'sparse_categorical_crossentropy', 'outputActivation': 'softmax',
              'metric': 'sparse_categorical_accuracy',
              'testString': None, 'charSet': None}
@@ -105,15 +105,12 @@ class charnet():
         inputGenerator = gen.inpGenerator()
     else:
         inputGenerator = self.defaultConfig['inputGenerator']
-    if self.defaultConfig['outputGenerator'] == 'text':
-        outputGenerator = gen.outGenerator()
-    else:
-        outputGenerator = self.defaultConfig['outputGenerator']
     if not self.defaultConfig['decodeOutput']:
       tmp = np.zeros((1,self.defaultConfig['classes']*self.defaultConfig['inputs']))
       tmp[0][:] = list(itertools.chain.from_iterable([charDictList[self.defaultConfig['testString'][j]] for j in range(self.defaultConfig['inputs'])]))
       self.defaultConfig['testString'] = tmp
-    self.model.fit_generator(inputGenerator,
+    inputGenerator = utils.getTfGenerator(inputGenerator,self.defaultConfig['batchSize'])
+    self.model.fit_generator(inputGenerator.make_one_shot_iterator(),
                     epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],
                     max_queue_size=2,
@@ -123,9 +120,7 @@ class charnet():
     tf.keras.callbacks.ModelCheckpoint('gdrive/My Drive/'+self.defaultConfig['weightFolderName']+'/weights.{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1),
     tf.keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False),
     generateCharacters.GenerateCharsCallback(generateCharsInstance,self.defaultConfig['testString'],self.defaultConfig['inputs'],self.defaultConfig['decodeOutput'])           
-                              ],
-                   validation_data=outputGenerator,
-                   validation_steps=self.defaultConfig['changePerKerasEpoch']*0.01)
+                              ])
 
   def run(self, datasetFilePath=None, datasetString=None, prepareText=True, fromGDrive=False):
     if fromGDrive and datasetFilePath is not None:

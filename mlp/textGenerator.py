@@ -22,8 +22,8 @@ class generator():
     currentBatchsize = self.batchsize
     if self.outputs == 1:
       while True:
-        tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.bool)
-        tmpOut = np.zeros((currentBatchsize,1),dtype=np.float)
+        tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.float32)
+        tmpOut = np.zeros((currentBatchsize,1),dtype=np.float32)
         if self.indexIn:
           for _ in range(self.steps):
             tmpIn[0][:] = [self.charDictList[self.txt[j]] for j in range(ik,ik+self.inputs)]
@@ -54,8 +54,8 @@ class generator():
         currentBatchsize += int(self.batchsize*self.changePerKerasEpoch)
     else:
       while True:
-        tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.bool)
-        tmpOut = np.zeros((currentBatchsize,self.outputs,1),dtype=np.float)
+        tmpIn = np.zeros((currentBatchsize,inputsTimesClasses),dtype=np.float32)
+        tmpOut = np.zeros((currentBatchsize,self.outputs,1),dtype=np.float32)
         if self.indexIn:
           for _ in range(self.steps):
             tmpIn[0][:] = [self.charDictList[self.txt[j]] for j in range(ik,ik+self.inputs)]

@@ -19,9 +19,7 @@ class generator():
     tmpOut = np.zeros((self.batchsize,1),dtype=np.float32)
     # Using lists instead of numpy arrays is about seven times slower
     if self.indexIn:
-      
-      tmpOut = np.zeros((self.batchsize,1),dtype=np.float32)
-      tmpIn = [None]*self.batchsize
+      tmpIn = np.zeros((self.batchsize,self.inputs),dtype=np.float32)
       tmpIn[0][:] = [self.charDictList[self.txt[j]] for j in range(self.inputs)]
       tmpOut[0][0] = self.charDict[self.txt[self.inputs]] 
       while True:
@@ -33,7 +31,7 @@ class generator():
         if n >= self.txtLen:
           n = 0
     else:
-      tmpIn = [None]*self.batchsize
+      tmpIn = np.zeros((self.batchsize,self.inputs*self.classes),dtype=np.float32)
       tmpIn[0][:] = list(itertools.chain.from_iterable(
           [self.charDictList[self.txt[j]] for j in range(self.inputs)]))
       tmpOut[0][0] = self.charDict[self.txt[self.inputs]] 

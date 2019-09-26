@@ -14,7 +14,7 @@ class charnet():
              'splitLayer': False, 'concatDense': True, 'bidirectional': True,
              'concatBeforeOutput': True, 'drawModel': True, 'gpu': True, 
              'neuronList': None, 'indexIn': False, 'classNeurons': True,
-             'decodeOutput': True,
+             'decodeOutput': True, 'tpu': False,
              'inputs': 60, 'neuronsPerLayer': 120, 'layerCount':4, 'epochs': 1,
              'kerasEpochsPerEpoch': 256, 'learningRate': 0.005, 'outputs': 1,
              'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,

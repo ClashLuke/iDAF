@@ -5,7 +5,7 @@ class generator():
   def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, valSplit, changePerKerasEpoch, tpu):
     self.batchsize = batchsize
     self.txt = txt
-    self.txtLen = len(txt)
+    self.txtLen = len(txt)-inputs-2
     self.outputs = outputs
     self.indexIn = indexIn
     self.inputs = inputs

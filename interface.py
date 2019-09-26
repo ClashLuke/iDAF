@@ -56,7 +56,12 @@ class charnet():
     return datasetString
 
   def getModel(self, modelCompile=True):
-    self.model = modelCreator.getModel(**self.defaultConfig,modelCompile=modelCompile)
+    if config['tpu']:
+      strategy = tf.distribute.TPUStrategy()
+      with strategy.scope():
+        self.model = modelCreator.getModel(**self.defaultConfig,modelCompile=modelCompile)
+    else:
+      self.model = modelCreator.getModel(**self.defaultConfig,modelCompile=modelCompile)
 
   def getDatasetFromGDrive(self, datasetFileName):
     utils.mountDrive()

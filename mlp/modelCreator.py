@@ -70,28 +70,19 @@ def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActi
     layer = tf.keras.layers.Reshape((outputs,classes))(layer)
   return layer
 
-def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile, tpu):
+def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile):
   model = tf.keras.Model(inputs=[inp],outputs=[layer])
   if modelCompile:
     model.compile(loss=loss, optimizer=tf.train.AdamOptimizer(learning_rate=learningRate), metrics=[metric])
     model.summary()
     if drawModel:
       tf.keras.utils.plot_model(model, to_file='model.png')
-  if tpu:
-    TPU_WORKER = 'grpc://' + os.environ['COLAB_TPU_ADDR']
-    tf.logging.set_verbosity(tf.logging.INFO)
-
-    model = tf.contrib.tpu.keras_to_tpu_model(
-                                              model=model,
-                                              strategy=tf.contrib.tpu.TPUDistributionStrategy(
-                                                        tf.contrib.cluster_resolver.TPUClusterResolver(TPU_WORKER))
-                                              )
   return model
 
 def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              concatPreviousLayers=True, repeatInput=True, unroll=True,
              initialLSTM=False, inputDense=False, concatDense=True,
-             bidirectional=True, modelCompile=True, tpu=True,
+             bidirectional=True, modelCompile=True,
              concatBeforeOutput=True, drawModel=True, gpu=True, 
              neuronList=None, indexIn=False, classNeurons=True,
              inputs=60, neuronsPerLayer=120, layerCount=4,
@@ -126,7 +117,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss)
     # Compiling and displaying model
-    model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile, tpu)
+    model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)
   else:
     utils.getPreviousWeightsFromGDrive(weightFolderName)
     lastUsedModel = utils.getLatestModelName(weightFolderName)

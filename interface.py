@@ -110,7 +110,7 @@ class charnet():
       tmp[0][:] = list(itertools.chain.from_iterable([charDictList[self.defaultConfig['testString'][j]] for j in range(self.defaultConfig['inputs'])]))
       self.defaultConfig['testString'] = tmp
     inputGenerator = utils.getTfGenerator(inputGenerator,self.defaultConfig['batchSize'])
-    self.model.fit_generator(inputGenerator.make_one_shot_iterator(),
+    self.model.fit(inputGenerator.make_one_shot_iterator(),
                     epochs=self.defaultConfig['epochs']*self.defaultConfig['kerasEpochsPerEpoch'],
                     verbose=self.defaultConfig['verbose'],
                     max_queue_size=2,

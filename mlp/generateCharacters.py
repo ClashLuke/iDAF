@@ -27,12 +27,18 @@ class generateChars():
 
   def genRecurse(self, instr, model):
     # initial input
-    inp = list(itertools.chain.from_iterable(
-        [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
-    ))
-    for i in range(self.outCharCount):
-      res = self.genKey(inp[i*self.classes*self.outputs:], model)
-      inp = inp+list(itertools.chain.from_iterable([self.charDictList[r] for r in res]))
+    try:
+      inp = list(itertools.chain.from_iterable(
+          [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
+      ))
+      for i in range(self.outCharCount):
+        res = self.genKey(inp[i*self.classes*self.outputs:], model)
+        inp = inp+list(itertools.chain.from_iterable([self.charDictList[r] for r in res]))
+    except:
+      inp = [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
+      for i in range(self.outCharCount):
+        res = self.genKey(inp[i*self.outputs:], model)
+        inp = inp+[self.charDictList[r] for r in res]
     return inp
 
   def genStr(self, instr, model):

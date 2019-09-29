@@ -48,7 +48,7 @@ class generator():
             n = 0
     else:
       out = self.inputs+self.outputs
-      tmpOut = np.zeros((self.batchsize,self.outputs),dtype=np.float32)
+      tmpOut = np.zeros((self.batchsize,self.outputs,1),dtype=np.float32)
       if self.indexIn:
         tmpIn = np.zeros((self.batchsize,self.inputs),dtype=np.float32)
         tmpIn[-1][:] = [self.charDictList[self.txt[j]] for j in range(self.inputs)]

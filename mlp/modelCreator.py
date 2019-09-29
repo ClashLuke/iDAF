@@ -56,10 +56,13 @@ def getInputLayer(layer, inputs, activation, classes, inputDense):
     layer = tf.keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
   return layer
 
-def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense):
+def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional):
   for i in range(layerCount-1):
     n = neuronList[i]
-    layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
+    if twoDimensional:
+      layer = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal()))(layer)
+    else:
+      layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layerList.append(layer)
     if concatDense and len(layerList) > 1:
@@ -120,7 +123,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     if repeatInput:
       layerList.append(layer)
     # Hidden layer
-    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense)
+    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional)
     # Output layer
     n = neuronList[-1]
     layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)

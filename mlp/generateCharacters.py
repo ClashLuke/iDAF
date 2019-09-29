@@ -13,8 +13,12 @@ class generateChars():
     self.outCharCount = outCharCount
 
   def genKey(self, inp, model):
-    topred = np.zeros((1,self.classes*self.inputs))
-    topred[0][:] = inp[:]
+    try:
+      topred = np.zeros((1,self.classes*self.inputs))
+      topred[0][:] = inp[:]
+    except:
+      topred = np.zeros((1,self.inputs))
+      topred[0][:] = inp[:]
     if self.outputs == 1:
       pred = np.argmax(model.predict(topred)[0])
       pred = [self.chars[pred]]

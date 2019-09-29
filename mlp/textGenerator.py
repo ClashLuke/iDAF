@@ -55,7 +55,7 @@ class generator():
         while True:
           for b in range(self.batchsize):
             tmpIn[b][:] = np.append(tmpIn[b-1][1:],self.charDictList[self.txt[self.inputs+b+n]])
-            tmpOut[b][:] = np.append(tmpIn[b-1][1:],self.charDict[self.txt[self.inputs+1+b+n]])
+            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[self.inputs+1+b+n]])
           for b in range(self.batchsize):
             yield (tmpIn[b], tmpOut[b])
           n+=self.batchsize
@@ -69,7 +69,7 @@ class generator():
         while True:
           for b in range(self.batchsize):
             tmpIn[b][:] = np.append(tmpIn[b-1][self.classes:],self.charDictList[self.txt[self.inputs+b+n]])
-            tmpOut[b][:] = np.append(tmpIn[b-1][1:],self.charDict[self.txt[self.inputs+1+b+n]])
+            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[self.inputs+1+b+n]])
           for b in range(self.batchsize):
             yield (tmpIn[b], tmpOut[b])
           n+=self.batchsize

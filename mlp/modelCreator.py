@@ -15,7 +15,8 @@ def addAdvancedLayers(layer, leakyRelu, batchNorm):
     return layer
 
 def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
-                          inputs, unroll, classes, dropout):
+                          inputs, unroll, classes, dropout,
+                          twoDimensional):
   inp = tf.keras.layers.Input(shape=(inputs*classes,))
   if initialLSTM:
     layer = tf.keras.layers.Reshape((inputs,classes))(inp)
@@ -34,7 +35,8 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
                               kernel_initializer=tf.keras.initializers.lecun_normal(),
                               unroll=unroll, return_sequences=True)(layer)
     layer = tf.keras.layers.GaussianDropout(dropout)(layer)
-    layer = tf.keras.layers.Flatten()(layer)
+    if not twoDimensional:
+      layer = tf.keras.layers.Flatten()(layer)
   else:
     layer = tf.keras.layers.GaussianDropout(dropout)(inp)
   return layer, inp
@@ -59,9 +61,11 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
       layer = tf.keras.layers.concatenate(list(layerList))
   return layerList, layer
 
-def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss):
+def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss, twoDimensional):
   if concatBeforeOutput:
     layer = tf.keras.layers.concatenate(layerList+[layer])
+  if twoDimensional:
+    layer = tf.keras.layers.Flatten()(layer)
   if 'crossentropy' not in loss:
     classes = 1
   layer = tf.keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
@@ -85,10 +89,11 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              bidirectional=True, modelCompile=True,
              concatBeforeOutput=True, drawModel=True, gpu=True, 
              neuronList=None, indexIn=False, classNeurons=True,
+             twoDimensional=True,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
              activation='gelu', weightFolderName='MLP_Weights', 
-             outputActivation='softmax', loss='sparse_categorical_crossentropy',
+             outputActivation='softmax',loss='sparse_categorical_crossentropy',
              metric='sparse_categorical_accuracy',**kwargs):
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
@@ -104,7 +109,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
       inp = tf.keras.layers.Input(shape=(inputs,))
       layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
-      layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense)
+      layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional)
     layer = getInputLayer(layer, inputs, activation, classes, inputDense)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     if repeatInput:
@@ -115,7 +120,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     n = neuronList[-1]
     layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
-    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss)
+    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss, twoDimensional)
     # Compiling and displaying model
     model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)
   else:

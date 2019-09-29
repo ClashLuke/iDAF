@@ -52,11 +52,11 @@ class generator():
       if self.indexIn:
         tmpIn = np.zeros((self.batchsize,self.inputs),dtype=np.float32)
         tmpIn[-1][:] = [self.charDictList[self.txt[j]] for j in range(self.inputs)]
-        tmpOut[0][:] = [self.charDict[self.txt[self.inputs+j]] for j in range(self.outputs)]
+        tmpOut[0][:] = [[self.charDict[self.txt[self.inputs+j]]] for j in range(self.outputs)]
         while True:
           for b in range(self.batchsize):
             tmpIn[b][:] = np.append(tmpIn[b-1][1:],self.charDictList[self.txt[self.inputs+b+n]])
-            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[out+1+b+n]])
+            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[out+1+b+n]]).reshape(self.outputs,1)
           for b in range(self.batchsize):
             yield (tmpIn[b], tmpOut[b])
           n+=self.batchsize
@@ -66,11 +66,11 @@ class generator():
         tmpIn = np.zeros((self.batchsize,self.inputs*self.classes),dtype=np.float32)
         tmpIn[-1][:] = list(itertools.chain.from_iterable(
             [self.charDictList[self.txt[j]] for j in range(self.inputs)]))
-        tmpOut[0][:] = [self.charDict[self.txt[self.inputs+j]] for j in range(self.outputs)]
+        tmpOut[0][:] = [[self.charDict[self.txt[self.inputs+j]]] for j in range(self.outputs)]
         while True:
           for b in range(self.batchsize):
             tmpIn[b][:] = np.append(tmpIn[b-1][self.classes:],self.charDictList[self.txt[self.inputs+b+n]])
-            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[out+1+b+n]])
+            tmpOut[b][:] = np.append(tmpOut[b-1][1:],self.charDict[self.txt[out+1+b+n]]).reshape(self.outputs,1)
           for b in range(self.batchsize):
             yield (tmpIn[b], tmpOut[b])
           n+=self.batchsize

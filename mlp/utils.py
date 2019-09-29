@@ -76,10 +76,16 @@ turn off in a similar way as the red ones."""
 
 def getTfGenerator(pythonGenerator, batchSize, outputs):
   import tensorflow as tf
-  tfGenerator = tf.data.Dataset.from_generator(generator=lambda: map(tuple, pythonGenerator),
-                                               output_types=(tf.float32,tf.float32),
-                                               output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
-                                               )
+  if outputs > 1:
+    tfGenerator = tf.data.Dataset.from_generator(generator=lambda: map(tuple, pythonGenerator),
+                                                 output_types=(tf.float32,tf.float32),
+                                                 output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,1)))
+                                                )
+  else:
+    tfGenerator = tf.data.Dataset.from_generator(generator=lambda: map(tuple, pythonGenerator),
+                                                 output_types=(tf.float32,tf.float32),
+                                                 output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
+                                                )
   tfGenerator = tfGenerator.batch(batchSize)
   tfGenerator = tfGenerator.repeat(batchSize)
   tfGenerator = tfGenerator.prefetch(tf.contrib.data.AUTOTUNE)

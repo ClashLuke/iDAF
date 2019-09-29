@@ -21,16 +21,16 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
     layer = tf.keras.layers.Reshape((inputs,classes))(inp)
     if gpu:
       if bidirectional:
-        layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(inputs, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True))(layer)
+        layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(classes, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True))(layer)
       else:
-        layer = tf.keras.layers.CuDNNLSTM(inputs, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True)(layer)
+        layer = tf.keras.layers.CuDNNLSTM(classes, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True)(layer)
     else:
       if bidirectional:
-        layer = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
+        layer = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
                               kernel_initializer=tf.keras.initializers.lecun_normal(),
                               unroll=unroll, return_sequences=True))(layer)
       else:
-        layer = tf.keras.layers.LSTM(units=inputs, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
+        layer = tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
                               kernel_initializer=tf.keras.initializers.lecun_normal(),
                               unroll=unroll, return_sequences=True)(layer)
     layer = tf.keras.layers.GaussianDropout(dropout)(layer)

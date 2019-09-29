@@ -2,12 +2,12 @@ import numpy as np
 import itertools
 
 class generator():
-  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, changePerKerasEpoch):
+  def __init__(self, batchsize, txt, outputs, indexIn, inputs, steps, charDictList, charDict, classes, changePerKerasEpoch, embedding):
     self.batchsize = batchsize
     self.txt = txt
     self.txtLen = len(txt)-inputs-batchsize-2
     self.outputs = outputs
-    self.indexIn = indexIn
+    self.indexIn = indexIn or embedding
     self.inputs = inputs
     self.steps = steps
     self.charDictList = charDictList

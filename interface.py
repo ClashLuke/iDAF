@@ -15,6 +15,7 @@ class charnet():
              'concatBeforeOutput': True, 'drawModel': True, 'gpu': True, 
              'neuronList': None, 'indexIn': False, 'classNeurons': True,
              'decodeOutput': True, 'tpu': False, 'twoDimensional': False,
+             'embedding': False,
              'inputs': 60, 'neuronsPerLayer': 120, 'layerCount':4, 'epochs': 1,
              'kerasEpochsPerEpoch': 256, 'learningRate': 0.005, 'outputs': 1,
              'dropout': 0.35, 'batchSize': 1024, 'valSplit': 0.1, 'verbose': 1,
@@ -99,7 +100,8 @@ class charnet():
                       charDictList,
                       charDict,
                       self.defaultConfig['classes'],
-                      self.defaultConfig['changePerKerasEpoch'])
+                      self.defaultConfig['changePerKerasEpoch'],
+                      self.defaultConfig['embedding'])
     if self.defaultConfig['inputGenerator'] == 'text':
         inputGenerator = gen.inpGenerator()
     else:

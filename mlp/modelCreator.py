@@ -16,10 +16,15 @@ def addAdvancedLayers(layer, leakyRelu, batchNorm):
 
 def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
                           inputs, unroll, classes, dropout,
-                          twoDimensional):
-  inp = tf.keras.layers.Input(shape=(inputs*classes,))
+                          twoDimensional, embedding):
+  if embedding:
+    inp = tf.keras.layers.Input(shape=(inputs,))
+    layer = tf.keras.layers.Embedding(input_dim=inputs, output_dim=classes)(inp)
+  else:
+    inp = tf.keras.layers.Input(shape=(inputs*classes,))
+    layer = inp
   if initialLSTM:
-    layer = tf.keras.layers.Reshape((inputs,classes))(inp)
+    layer = tf.keras.layers.Reshape((inputs,classes))(layer)
     if gpu:
       if bidirectional:
         layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(classes, kernel_initializer=tf.keras.initializers.lecun_normal(), return_sequences=True))(layer)
@@ -38,7 +43,7 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
     if not twoDimensional:
       layer = tf.keras.layers.Flatten()(layer)
   else:
-    layer = tf.keras.layers.GaussianDropout(dropout)(inp)
+    layer = tf.keras.layers.GaussianDropout(dropout)(layer)
   return layer, inp
 
 def initialiseList(lenght, initValue, differingValuePosition, differingValue):
@@ -89,7 +94,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              bidirectional=True, modelCompile=True,
              concatBeforeOutput=True, drawModel=True, gpu=True, 
              neuronList=None, indexIn=False, classNeurons=True,
-             twoDimensional=True,
+             twoDimensional=True, embedding=False,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
              activation='gelu', weightFolderName='MLP_Weights', 
@@ -109,7 +114,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
       inp = tf.keras.layers.Input(shape=(inputs,))
       layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
-      layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional)
+      layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional, embedding)
     layer = getInputLayer(layer, inputs, activation, classes, inputDense)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     if repeatInput:

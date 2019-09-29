@@ -78,7 +78,7 @@ class charnet():
         return None
       self.defaultConfig['steps'] = int(len(datasetString)/self.defaultConfig['batchSize']/self.defaultConfig['kerasEpochsPerEpoch'])
 
-    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'],self.defaultConfig['charSet'])
+    chars, charDict, charDictList, classes = utils.getCharacterVars(self.defaultConfig['indexIn'] or self.defaultConfig['embedding'],self.defaultConfig['charSet'])
 
     self.defaultConfig['classes'] = classes
     

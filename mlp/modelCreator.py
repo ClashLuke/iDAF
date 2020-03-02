@@ -4,6 +4,8 @@ import tensorflow as tf
 import os
 
 
+DEPTH = 2  # To make use of the Universal Approximation Theorem
+
 def gelu(x):
     return 0.5*x*(1+tf.tanh(np.sqrt(2/np.pi)*(x+0.044715*tf.pow(x, 3))))
 
@@ -59,10 +61,11 @@ def getInputLayer(layer, inputs, activation, classes, inputDense):
 def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional):
   for i in range(layerCount-1):
     n = neuronList[i]
-    if twoDimensional:
-      layer = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal()))(layer)
-    else:
-      layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
+    for _ in range(DEPTH):
+      if twoDimensional:
+        layer = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal()))(layer)
+      else:
+        layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
     layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
     layerList.append(layer)
     if concatDense and len(layerList) > 1:

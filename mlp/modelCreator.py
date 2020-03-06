@@ -1,13 +1,8 @@
 import CharNet.mlp.utils as utils
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 import os
-
-
-DEPTH = 2  # To make use of the Universal Approximation Theorem
-
-def gelu(x):
-    return 0.5*x*(1+tf.tanh(np.sqrt(2/np.pi)*(x+0.044715*tf.pow(x, 3))))
 
 def addAdvancedLayers(layer, leakyRelu, batchNorm):
     if batchNorm:
@@ -35,11 +30,11 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
     else:
       if bidirectional:
         layer = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
-                              kernel_initializer=tf.keras.initializers.lecun_normal(),
+                              kernel_initializer=tf.keras.initializers.Orthogonal(),
                               unroll=unroll, return_sequences=True))(layer)
       else:
         layer = tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',recurrent_activation='hard_sigmoid', 
-                              kernel_initializer=tf.keras.initializers.lecun_normal(),
+                              kernel_initializer=tf.keras.initializers.Orthogonal(),
                               unroll=unroll, return_sequences=True)(layer)
     layer = tf.keras.layers.GaussianDropout(dropout)(layer)
     if not twoDimensional:
@@ -55,18 +50,27 @@ def initialiseList(lenght, initValue, differingValuePosition, differingValue):
 
 def getInputLayer(layer, inputs, activation, classes, inputDense):
   if inputDense:
-    layer = tf.keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
+    layer = tf.keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
   return layer
 
-def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional):
+def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout, depth):
+  if twoDimensional:
+      dense = lambda *x, **y: tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(*x, **y))
+  else:
+      dense = lambda *x, **y, tf.keras.layers.Dense(*x, **y)
   for i in range(layerCount-1):
     n = neuronList[i]
-    for _ in range(DEPTH):
-      if twoDimensional:
-        layer = tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal()))(layer)
-      else:
-        layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
-    layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
+    for _ in range(depth):
+        key_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
+        query_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
+        value_layer = tfa.layers.GELU()(key_layer)
+        value_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(value_layer)
+        value_layer = tf.keras.layers.Softmax()(value_layer)
+        key_layer = tf.keras.layers.Multiply()([key_layer, value_layer])
+        layer = tf.keras.layers.Add()([query_layer, key_layer])
+        layer = tf.keras.layers.BatchNormalization(axis=1)(layer)
+        layer = tf.keras.layers.GaussianDropout(dropout)(layer)
+        layer = tfa.layers.GELU()(layer)
     layerList.append(layer)
     if concatDense and len(layerList) > 1:
       layer = tf.keras.layers.concatenate(list(layerList))
@@ -79,7 +83,7 @@ def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActi
     layer = tf.keras.layers.Flatten()(layer)
   if 'crossentropy' not in loss:
     classes = 1
-  layer = tf.keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
+  layer = tf.keras.layers.Dense(units=outputs*classes, activation=outputActivation, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
 
   if outputs > 1:
     layer = tf.keras.layers.Reshape((outputs,classes))(layer)
@@ -88,7 +92,7 @@ def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActi
 def compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile):
   model = tf.keras.Model(inputs=[inp],outputs=[layer])
   if modelCompile:
-    model.compile(loss=loss, optimizer=tf.train.AdamOptimizer(learning_rate=learningRate), metrics=[metric])
+    model.compile(loss=loss, optimizer=tfa.optimizers.LAMB(lr=learningRate,weight_decay_rate=learningRate/100), metrics=[metric])
     model.summary()
     if drawModel:
       tf.keras.utils.plot_model(model, to_file='model.png')
@@ -105,7 +109,9 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
              activation='gelu', weightFolderName='MLP_Weights', 
              outputActivation='softmax',loss='sparse_categorical_crossentropy',
-             metric='sparse_categorical_accuracy',**kwargs):
+             metric='sparse_categorical_accuracy', depth=1, **kwargs):
+  if len(kwargs) > 0:
+    print(f"Unused Keyword Arguments: {kwargs}")
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:
@@ -126,7 +132,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     if repeatInput:
       layerList.append(layer)
     # Hidden layer
-    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional)
+    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout)
     # Output layer
     n = neuronList[-1]
     layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)

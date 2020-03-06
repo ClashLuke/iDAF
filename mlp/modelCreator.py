@@ -123,6 +123,9 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
       layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
       layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional, embedding)
+    layer = tf.keras.layers.Dense(inputs,kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
+    layer = tf.keras.layers.BatchNorm(axis=-1)(layer)
+    layer = tfa.layers.GELU()(layer)
     layer = getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, concatDense, twoDimensional, dropout, depth)
     layer = getOutput(layer, concatBeforeOutput, outputs, classes, outputActivation, loss, twoDimensional)
     # Compiling and displaying model

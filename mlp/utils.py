@@ -87,6 +87,7 @@ def getTfGenerator(pythonGenerator, batchSize, outputs):
                                                  output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
                                                 )
   tfGenerator = tfGenerator.batch(batchSize)
+  tfGenerator = tfGenerator.shuffle(16, reshuffle_each_iteration=True)
   tfGenerator = tfGenerator.repeat(batchSize)
-  tfGenerator = tfGenerator.prefetch(tf.contrib.data.AUTOTUNE)
+  tfGenerator = tfGenerator.prefetch(tf.data.experimental.AUTOTUNE)
   return tfGenerator

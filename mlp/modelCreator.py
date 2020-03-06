@@ -57,7 +57,7 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
   if twoDimensional:
       dense = lambda *x, **y: tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(*x, **y))
   else:
-      dense = lambda *x, **y, tf.keras.layers.Dense(*x, **y)
+      dense = lambda *x, **y: tf.keras.layers.Dense(*x, **y)
   for i in range(layerCount-1):
     n = neuronList[i]
     for _ in range(depth):

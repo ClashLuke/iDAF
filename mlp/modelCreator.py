@@ -54,7 +54,7 @@ def getInputLayer(layer, inputs, classes, inputDense):
     layer = tfa.layers.GELU()(layer)
   return layer
 
-def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout, depth):
+def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, concatDense, twoDimensional, dropout, depth):
   if twoDimensional:
       dense = lambda *x, **y: tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(*x, **y))
   else:
@@ -77,9 +77,7 @@ def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, layerLi
       layer = tf.keras.layers.Concatenate(axis=-1)([prev_in, layer])
   return layer
 
-def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss, twoDimensional):
-  if concatBeforeOutput:
-    layer = tf.keras.layers.concatenate(layerList+[layer])
+def getOutput(layer, concatBeforeOutput, outputs, classes, outputActivation, loss, twoDimensional):
   if twoDimensional:
     layer = tf.keras.layers.Flatten()(layer)
   if 'crossentropy' not in loss:
@@ -119,14 +117,13 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
     neuronsPerLayer = neuronList[0]
 
   if trainNewModel:
-    layerList = []
     # Input layer
     if indexIn:
       inp = tf.keras.layers.Input(shape=(inputs,))
       layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
       layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional, embedding)
-    layer = getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout, depth)
+    layer = getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, concatDense, twoDimensional, dropout, depth)
     layer = getOutput(layer, concatBeforeOutput, outputs, classes, outputActivation, loss, twoDimensional)
     # Compiling and displaying model
     model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)

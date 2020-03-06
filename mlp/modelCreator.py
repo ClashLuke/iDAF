@@ -48,18 +48,20 @@ def initialiseList(lenght, initValue, differingValuePosition, differingValue):
   initialList[differingValuePosition] = differingValue
   return initialList
 
-def getInputLayer(layer, inputs, activation, classes, inputDense):
+def getInputLayer(layer, inputs, classes, inputDense):
   if inputDense:
-    layer = tf.keras.layers.Dense(units=inputs, activation=activation, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
+    layer = tf.keras.layers.Dense(units=inputs, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
+    layer = tfa.layers.GELU()(layer)
   return layer
 
-def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout, depth):
+def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout, depth):
   if twoDimensional:
       dense = lambda *x, **y: tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(*x, **y))
   else:
       dense = lambda *x, **y: tf.keras.layers.Dense(*x, **y)
   for i in range(layerCount-1):
     n = neuronList[i]
+    prev_in = layer
     for _ in range(depth):
         key_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
         query_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(layer)
@@ -71,10 +73,9 @@ def getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchN
         layer = tf.keras.layers.BatchNormalization(axis=1)(layer)
         layer = tf.keras.layers.GaussianDropout(dropout)(layer)
         layer = tfa.layers.GELU()(layer)
-    layerList.append(layer)
-    if concatDense and len(layerList) > 1:
-      layer = tf.keras.layers.concatenate(list(layerList))
-  return layerList, layer
+    if concatDense:
+      layer = tf.keras.layers.Concatenate(axis=-1)([prev_in, layer])
+  return layer
 
 def getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss, twoDimensional):
   if concatBeforeOutput:
@@ -107,17 +108,15 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
              twoDimensional=True, embedding=False,
              inputs=60, neuronsPerLayer=120, layerCount=4,
              learningRate=0.005, classes=30, outputs=1, dropout=0.35,
-             activation='gelu', weightFolderName='MLP_Weights', 
-             outputActivation='softmax',loss='sparse_categorical_crossentropy',
-             metric='sparse_categorical_accuracy', depth=1, **kwargs):
+             weightFolderName='MLP_Weights', outputActivation='softmax',
+             loss='sparse_categorical_crossentropy', metric='sparse_categorical_accuracy',
+             depth=1, **kwargs):
   if len(kwargs) > 0:
     print(f"Unused Keyword Arguments: {kwargs}")
   if neuronList is None:
     neuronList = utils.getNeuronList(neuronsPerLayer,layerCount,classNeurons,classes)
   else:
     neuronsPerLayer = neuronList[0]
-  if activation == 'gelu':
-    activation = gelu
 
   if trainNewModel:
     layerList = []
@@ -127,17 +126,8 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
       layer = tf.keras.layers.GaussianDropout(dropout)(inp)
     else:
       layer, inp = getInitialBinaryLayer(initialLSTM, gpu, bidirectional, inputs, unroll, classes, inputDense, twoDimensional, embedding)
-    layer = getInputLayer(layer, inputs, activation, classes, inputDense)
-    layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
-    if repeatInput:
-      layerList.append(layer)
-    # Hidden layer
-    layerList, layer = getHiddenLayers(layer, layerCount, neuronList, activation, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout)
-    # Output layer
-    n = neuronList[-1]
-    layer = tf.keras.layers.Dense(units=n, activation=activation, kernel_initializer=tf.keras.initializers.lecun_normal())(layer)
-    layer = addAdvancedLayers(layer, leakyRelu, batchNorm)
-    layer = getOutput(layer, concatBeforeOutput, layerList, outputs, classes, outputActivation, loss, twoDimensional)
+    layer = getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, layerList, concatDense, twoDimensional, dropout)
+    layer = getOutput(layer, concatBeforeOutput, outputs, classes, outputActivation, loss, twoDimensional)
     # Compiling and displaying model
     model = compileModel(inp, layer, learningRate, drawModel, loss, metric, modelCompile)
   else:

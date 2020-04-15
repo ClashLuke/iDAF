@@ -28,9 +28,7 @@ class GenerateChars:
 
     def gen_str(self, instr, model):
         rec_out = self.gen_recurse(instr, model)
-        out = ''.join(self.chars[np.argmax(rec_out[i * self.classes:
-                                                   (i + 1) * self.classes])]
-                      for i in range(self.outCharCount))
+        out = ''.join(self.chars[i] for i in range(self.outCharCount))
         return out
 
 

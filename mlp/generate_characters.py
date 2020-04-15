@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class GenerateChars():
+class GenerateChars:
     def __init__(self, classes, inputs, input_string, out_char_count, outputs, chars,
                  char_dict_list):
         self.classes = classes

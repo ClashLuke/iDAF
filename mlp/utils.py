@@ -69,8 +69,6 @@ def reformat_string(input_string, chars):
 
 
 def get_neuron_list(neurons_per_layer, layer, class_neurons, classes):
-    if class_neurons:
-        neurons_per_layer *= classes
     return [neurons_per_layer] * layer
 
 

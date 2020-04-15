@@ -4,16 +4,65 @@ A multi-layer perceptron network for artificial text and character generation
 
 ### General
 
-CharNet is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) network using a feed-forward network where each layer receives all previous layers as inputs.\
-CharNet acts as a humanly-readable example to show improvements compared to common multilayer perceptron models and RNNs for sequential data.\
-Various parameters are supported, most of them being switches, you can try to configure your own model.\
-To get started, clone this repository, import the charnet and execute it with your configuration. For a more in-depth tutorial, you can also follow the notebook in [here](https://github.com/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb) or execute the notebook using a Cloud-GPU at Google Colaboratory.
+CharNet is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron)
+network using using a dense feed-forward-network in which every layer is connected with
+all previous layers. Therefore CharNet is an application of the principles behind 
+[GAU](https://github.com/ClashLuke/GAU) and
+[InDeDeNet](https://github.com/ClashLuke/InDeDeNet). \
+It acts as a humanly-readable example to show improvements compared to Transformers,
+RNNs and other state-of-the-art models for sequential data.\
+Various parameters are supported, with most of them being switches, allowing for high
+configurability. Note that all parameters already have tested and well-behaving default
+values, so huge amounts of tweaking are not necessary.\
 
-A 3GB example dataset created out of all books found on the [full books site](http://www.fullbooks.com/) can be downloaded in [here](https://drive.google.com/file/d/1oBe5jVnk9PrOIitnD2B02-8fSQyxxT0R/view?usp=sharing).\
-A 500MB dataset based on the data from [textfiles](http://www.textfiles.com/directory.html) can be downloaded in [here](https://drive.google.com/file/d/1e4NZNhKqZCqzapnDgqYdEM02gzx81ZsW/view?usp=sharing). This dataset is significantly more noisy.\
-Both datasets have been formatted to use a [minimalistic character set](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30).\
-A third, significantly smaller dataset, is a dataset containing all tweets by Donald Trump, as seen in [here](http://www.trumptwitterarchive.com/archive). Its only 5 Megabytes, contains links and is not formatted yet. It can be found in [here](https://drive.google.com/file/d/1GifcAh7D2puKgu2k4oapmrDGetdoWfFC/view?usp=sharing).\
-Lastly there also is a dump of the linux kernel with removed comments which can be found in [here](https://drive.google.com/open?id=1bAVryLcuL0k-BjNZHMinueoznkiZIzUD). It hasnt been formatted either.
+### Getting Started
+
+If you're interested in running this code on one of
+[Google's free cloud GPUs](colab.research.google.com/), you could follow the notebook in 
+[here](https://colab.research.google.com/github/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb).
+
+If you're a hard-core user who wants to run it on their own machine, you should start
+with cloning this repository.
+``` 
+$ git clone https://github.com/ClashLuke/CharNet
+```
+Afterwords a python file or interpreter can be opened to first import the CharNet
+interface and then run the training.
+```PYTHON
+from CharNet import CharNet
+network = CharNet()
+network.run(datasetFilePath='dataset.txt',
+            prepareText=False)
+keras_model = network.model
+```
+As depicted above, the production-ready Keras model can be extracted after training 
+by accessing the .model attribute of the CharNet instance.  
+
+### Toy Datasets
+* A **3GB** example dataset created out of all books found on the
+[full books site](http://www.fullbooks.com/) can be downloaded in
+[here](https://drive.google.com/file/d/1oBe5jVnk9PrOIitnD2B02-8fSQyxxT0R/view?usp=sharing).
+It was formatted to use a
+[minimalistic character set](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30).
+* A **500MB** dataset based on the data from
+[textfiles](http://www.textfiles.com/directory.html) can be downloaded in
+[here](https://drive.google.com/file/d/1e4NZNhKqZCqzapnDgqYdEM02gzx81ZsW/view?usp=sharing).
+While using the same character set as the dataset above, it is still significantly more
+noisy.\
+* A third, significantly smaller dataset, is a dataset containing all tweets by Donald
+Trump, as seen in [here](http://www.trumptwitterarchive.com/archive). Its only 
+**5MB**, contains links and did not undergo any special formatting. It can be found in
+[here](https://drive.google.com/file/d/1GifcAh7D2puKgu2k4oapmrDGetdoWfFC/view?usp=sharing).\
+* Lastly there also is a **616MB** dump of the linux kernel with removed comments which
+can be found [here](https://drive.google.com/open?id=1bAVryLcuL0k-BjNZHMinueoznkiZIzUD).
+This dataset is pure as well, allowing for the true code generation experience.
+* For stress-testers, there also is the [PG-19](https://github.com/deepmind/pg19) 
+dataset by deepmind. It contains **11GB** of pure, unformatted books in multiple
+languages. The model has been tested using this dataset.
+
+Note that for most of these datasets, it is possible to attach them to your own google
+drive. You can then use them in google's colaboratory, as mentioned in
+[Getting Started](#Getting-Started).
 It is recommended to copy those datasets to your google drive to then use them in [Google Colab](https://colab.research.google.com/) if you are looking to try this project out.
 
 ### Parameters

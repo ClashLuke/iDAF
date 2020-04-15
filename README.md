@@ -32,7 +32,7 @@ interface and then run the training.
 from CharNet import CharNet
 network = CharNet()
 network.run(datasetFilePath='dataset.txt',
-            prepareText=False)
+            prepare_text=False)
 keras_model = network.model
 ```
 As depicted above, the production-ready Keras model can be extracted after training 
@@ -101,7 +101,7 @@ It is recommended to copy those datasets to your google drive to then use them i
 |**activation**|Activation function used in the neural network. The default is [gelu](https://arxiv.org/pdf/1606.08415.pdf) but [other activation functions](https://keras.io/activations/) can be used as well. | String | 'gelu'|
 |**weightFolderName**|Defines the name of the folder weights are saved to and loaded from.|String|'MLP_Weights'|
 |**testString**|A string that is used as an input for the neural network to predict at the end of every keras epoch. If set to None, it will default to [this](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L62) string. |String|None|
-|**charSet**|A set of characters used in the text used as input. Leaving at None will make the network assume it is [this](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30) char set. A text can be formatted to this format by passing `prepareText=True` to your charnet instance or explicitly calling `charnet.prepareText()`. |String|None|
+|**charSet**|A set of characters used in the text used as input. Leaving at None will make the network assume it is [this](https://github.com/ClashLuke/CharNet/blob/master/mlp/utils.py#L30) char set. A text can be formatted to this format by passing `prepare_text=True` to your charnet instance or explicitly calling `charnet.prepare_text()`. |String|None|
 
 ### Todo
 

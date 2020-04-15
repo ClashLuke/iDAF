@@ -4,76 +4,76 @@ import string
 import tensorflow as tf
 
 
-def mountDrive():
+def mount_drive():
     from google.colab import drive
     drive.mount('/content/gdrive')
 
 
-def getDatasetFromGDrive(fileName):
-    os.system(''.join(['cp "/content/gdrive/My Drive/', fileName, '" .']))
+def get_dataset_from_gdrive(file_name):
+    os.system(''.join(['cp "/content/gdrive/My Drive/', file_name, '" .']))
 
 
-def getPreviousWeightsFromGDrive(weightFolderName):
-    os.system(''.join(['cp -r "/content/gdrive/My Drive/', weightFolderName, '" .']))
+def get_previous_weights_from_gdrive(weight_folder_name):
+    os.system(''.join(['cp -r "/content/gdrive/My Drive/', weight_folder_name, '" .']))
 
 
-def getLatestModelName(weightFolderName):
-    all_files = [(name, os.path.getmtime(''.join(['./', weightFolderName, '/', name])))
-                 for name in os.listdir(''.join(['./', weightFolderName, '/']))]
+def get_latest_model_name(weight_folder_name):
+    all_files = [(name, os.path.getmtime(''.join(['./', weight_folder_name, '/', name])))
+                 for name in os.listdir(''.join(['./', weight_folder_name, '/']))]
     latest_uploaded_file = sorted(all_files, key=lambda x: -x[1])[0][0]
-    return ''.join(['./', weightFolderName, '/', latest_uploaded_file])
+    return ''.join(['./', weight_folder_name, '/', latest_uploaded_file])
 
 
-def readDataset(fileName):
-    with open(fileName, 'r', errors='ignore') as f:
+def read_dataset(file_name):
+    with open(file_name, 'r', errors='ignore') as f:
         txt = f.read()
     return txt
 
 
-def getListFromChar(char, chardict, classes):
-    num = chardict[char]
+def get_list_from_char(char, char_dict, classes):
+    num = char_dict[char]
     return [0] * num + [1] + [0] * (classes - 1 - num)
 
 
-def getChars():
+def get_chars():
     chars = string.ascii_lowercase + '.," '
     return chars
 
 
-def getCharacterVars(indexIn, chars=None):
+def get_character_vars(index_in, chars=None):
     if chars is None:
-        chars = getChars()
+        chars = get_chars()
     classes = len(chars)
-    charDict = {chars[i]: i for i in range(len(chars))}
-    if indexIn:
-        charDictList = {chars[i]: 1 - i / classes / 2 for i in range(classes)}
+    char_dict = {chars[i]: i for i in range(len(chars))}
+    if index_in:
+        char_dict_list = {chars[i]: 1 - i / classes / 2 for i in range(classes)}
     else:
-        charDictList = {chars[i]: getListFromChar(chars[i], charDict, classes) for i in
+        char_dict_list = {chars[i]: get_list_from_char(chars[i], char_dict, classes) for i in
                         range(classes)}
-    return chars, charDict, charDictList, classes
+    return chars, char_dict, char_dict_list, classes
 
 
-def reformatString(inputString, chars):
+def reformat_string(input_string, chars):
     """
     WARNING: This function removes all characters it has no clue about.
     This includes anything related to numbers as well as most symbols.
     If those characters are required in any way, do some preproprecessing,
     such as replacing '1' with 'one'.
     """
-    inputString = ' '.join(inputString.split())
-    inputString = inputString.lower()
-    inputString = ''.join([c for c in inputString if c in chars])
-    return inputString
+    input_string = ' '.join(input_string.split())
+    input_string = input_string.lower()
+    input_string = ''.join([c for c in input_string if c in chars])
+    return input_string
 
 
-def getNeuronList(neuronsPerLayer, layer, classNeurons, classes):
-    if classNeurons:
-        neuronsPerLayer *= classes
-    return [neuronsPerLayer] * layer
+def get_neuron_list(neurons_per_layer, layer, class_neurons, classes):
+    if class_neurons:
+        neurons_per_layer *= classes
+    return [neurons_per_layer] * layer
 
 
-def getTestString(charSet=None):
-    testString = """You then insert the tool into the holes evident on the blinkie's 
+def get_test_string(char_set=None):
+    test_string = """You then insert the tool into the holes evident on the blinkie's 
     surface.  The
 location of the hole depends on the color of the blinkie (and manufacturer).
 The blue blinkie commonly found in wealthy suburban areas is disabled by
@@ -84,27 +84,27 @@ located in either the upper hand right or left of the blinkie's body.  You will
 NOT hear a click with the red one because it uses a slide switch instead of a
 pushbutton one.  Again, the blinkie will turn off.  Yellow and black blinkies
 turn off in a similar way as the red ones."""
-    if charSet is None:
-        charSet = getChars()
-    testString = reformatString(testString, charSet)
-    return testString
+    if char_set is None:
+        char_set = get_chars()
+    test_string = reformat_string(test_string, char_set)
+    return test_string
 
 
-def getTfGenerator(pythonGenerator, batchSize, outputs):
+def get_tf_generator(python_generator, batch_size, outputs):
     if outputs > 1:
-        tfGenerator = tf.data.Dataset.from_generator(
-                generator=lambda: map(tuple, pythonGenerator),
+        tf_generator = tf.data.Dataset.from_generator(
+                generator=lambda: map(tuple, python_generator),
                 output_types=(tf.float32, tf.float32),
                 output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs, 1)))
                 )
     else:
-        tfGenerator = tf.data.Dataset.from_generator(
-                generator=lambda: map(tuple, pythonGenerator),
+        tf_generator = tf.data.Dataset.from_generator(
+                generator=lambda: map(tuple, python_generator),
                 output_types=(tf.float32, tf.float32),
                 output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
                 )
-    tfGenerator = tfGenerator.batch(batchSize)
-    tfGenerator = tfGenerator.shuffle(16, reshuffle_each_iteration=True)
-    tfGenerator = tfGenerator.repeat(batchSize)
-    tfGenerator = tfGenerator.prefetch(tf.data.experimental.AUTOTUNE)
-    return tfGenerator
+    tf_generator = tf_generator.batch(batch_size)
+    tf_generator = tf_generator.shuffle(16, reshuffle_each_iteration=True)
+    tf_generator = tf_generator.repeat(batch_size)
+    tf_generator = tf_generator.prefetch(tf.data.experimental.AUTOTUNE)
+    return tf_generator

@@ -3,180 +3,181 @@ import itertools
 import numpy as np
 import tensorflow as tf
 
-from .mlp import generate_characters, modelCreator, textGenerator, utils
+from .mlp import generate_characters, model_creator, text_generator, utils
 
 
 class CharNet:
-    def __init__(self, config=None, configFilePath=None):
-        self.defaultConfig = {'leakyRelu':            False,
-                              'batchNorm':            True,
-                              'trainNewModel':        True,
-                              'concatPreviousLayers': True,
-                              'repeatInput':          True,
-                              'unroll':               True,
-                              'splitInputs':          False,
-                              'initialLSTM':          False,
-                              'inputDense':           False,
-                              'splitLayer':           False,
-                              'concatDense':          True,
-                              'bidirectional':        True,
-                              'concatBeforeOutput':   True,
-                              'drawModel':            True,
-                              'gpu':                  True,
-                              'neuronList':           None,
-                              'indexIn':              False,
-                              'classNeurons':         True,
-                              'decodeOutput':         True,
-                              'tpu':                  False,
-                              'twoDimensional':       False,
-                              'embedding':            False,
-                              'inputs':               60,
-                              'neuronsPerLayer':      120,
-                              'layerCount':           4,
-                              'epochs':               1,
-                              'kerasEpochsPerEpoch':  256,
-                              'learningRate':         0.005,
-                              'outputs':              1,
-                              'dropout':              0.35,
-                              'batchSize':            1024,
-                              'valSplit':             0.1,
-                              'verbose':              1,
-                              'outCharCount':         512,
-                              'changePerKerasEpoch':  0.25,
-                              'steps':                1000,
-                              'activation':           'gelu',
-                              'weightFolderName':     'MLP_Weights',
-                              'inputGenerator':       'text',
-                              'loss':                 'sparse_categorical_crossentropy',
-                              'outputActivation':     'softmax',
-                              'metric':               'sparse_categorical_accuracy',
-                              'testString':           None,
-                              'charSet':              None
-                              }
+    def __init__(self, config=None, config_file_path=None):
+        self.default_config = {'leaky_relu':            False,
+                               'batch_norm':            True,
+                               'trainNewModel':        True,
+                               'concatPreviousLayers': True,
+                               'repeatInput':          True,
+                               'unroll':               True,
+                               'splitInputs':          False,
+                               'initial_lstm':          False,
+                               'input_dense':           False,
+                               'splitLayer':           False,
+                               'concat_dense':          True,
+                               'bidirectional':        True,
+                               'concat_before_output':   True,
+                               'draw_model':            True,
+                               'gpu':                  True,
+                               'neuron_list':           None,
+                               'index_in':              False,
+                               'class_neurons':         True,
+                               'decode_output':         True,
+                               'tpu':                  False,
+                               'two_dimensional':       False,
+                               'embedding':            False,
+                               'inputs':               60,
+                               'neurons_per_layer':      120,
+                               'layer_count':           4,
+                               'epochs':               1,
+                               'kerasEpochsPerEpoch':  256,
+                               'learning_rate':         0.005,
+                               'outputs':              1,
+                               'dropout':              0.35,
+                               'batch_size':            1024,
+                               'valSplit':             0.1,
+                               'verbose':              1,
+                               'out_char_count':         512,
+                               'change_per_keras_epoch':  0.25,
+                               'steps':                1000,
+                               'activation':           'gelu',
+                               'weight_folder_name':     'MLP_Weights',
+                               'inputGenerator':       'text',
+                               'loss':
+                                   'sparse_categorical_crossentropy',
+                               'output_activation':     'softmax',
+                               'metric':               'sparse_categorical_accuracy',
+                               'testString':           None,
+                               'char_set':              None
+                               }
         self.model = None
-        if configFilePath is not None:
+        if config_file_path is not None:
             import json
-            with open(configFilePath, 'r') as configFile:
+            with open(config_file_path, 'r') as configFile:
                 config = configFile.read()
             config = json.loads(config)
         if config is not None:
             for key, value in config.items():
-                self.defaultConfig[key] = value
+                self.default_config[key] = value
         else:
             print("No config found. Using default config.")
-        if self.defaultConfig['charSet'] is None:
-            self.defaultConfig['charSet'] = utils.getChars()
-        if self.defaultConfig['testString'] is None:
-            self.defaultConfig['testString'] = utils.getTestString()
+        if self.default_config['char_set'] is None:
+            self.default_config['char_set'] = utils.get_chars()
+        if self.default_config['testString'] is None:
+            self.default_config['testString'] = utils.get_test_string()
 
-    def prepareText(self, datasetFilePath=None, datasetString=None, prepareText=False):
-        if datasetFilePath is not None:
-            with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
-                datasetString = datasetFile.read()
-        if datasetString is None:
+    def prepare_text(self, dataset_file_path=None, dataset_string=None, prepare_text=False):
+        if dataset_file_path is not None:
+            with open(dataset_file_path, 'r', errors='ignore') as dataset_file:
+                dataset_string = dataset_file.read()
+        if dataset_string is None:
             print("FATAL: No dataset given. Exiting.")
             exit()
-        if prepareText:
-            chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],
-                                                    self.defaultConfig['charSet'])
+        if prepare_text:
+            chars, _, _, _ = utils.get_character_vars(self.default_config['index_in'],
+                                                      self.default_config['char_set'])
             print(
                     "WARNING: if your dataset is larger than 1GB and you have less "
                     "than "
                     "8GiB of available RAM, you will receive a memory error.")
-            datasetString = utils.reformatString(datasetString, chars)
-        return datasetString
+            dataset_string = utils.reformat_string(dataset_string, chars)
+        return dataset_string
 
-    def getModel(self, modelCompile=True):
-        if self.defaultConfig['tpu']:
+    def get_model(self, model_compile=True):
+        if self.default_config['tpu']:
             strategy = tf.distribute.MirroredStrategy()
             with strategy.scope():
-                self.model = modelCreator.getModel(**self.defaultConfig,
-                                                   modelCompile=modelCompile)
+                self.model = model_creator.get_model(**self.default_config,
+                                                     modelCompile=model_compile)
         else:
-            self.model = modelCreator.getModel(**self.defaultConfig,
-                                               modelCompile=modelCompile)
+            self.model = model_creator.get_model(**self.default_config,
+                                                 modelCompile=model_compile)
 
-    def getDatasetFromGDrive(self, datasetFileName):
-        utils.mountDrive()
-        utils.getDatasetFromGDrive(datasetFileName)
+    def get_dataset_from_gdrive(self, dataset_file_name):
+        utils.mount_drive()
+        utils.get_dataset_from_gdrive(dataset_file_name)
 
-    def train(self, datasetFilePath=None, datasetString=None):
-        if self.defaultConfig['inputGenerator'] == 'text':
-            if datasetFilePath is not None:
-                with open(datasetFilePath, 'r', errors='ignore') as datasetFile:
-                    datasetString = datasetFile.read()
-            if datasetString is None:
+    def train(self, dataset_file_path=None, dataset_string=None):
+        if self.default_config['inputGenerator'] == 'text':
+            if dataset_file_path is not None:
+                with open(dataset_file_path, 'r', errors='ignore') as dataset_file:
+                    dataset_string = dataset_file.read()
+            if dataset_string is None:
                 print("FATAL: No dataset given. Exiting.")
                 return None
-            self.defaultConfig['steps'] = int(
-                    len(datasetString) / self.defaultConfig['batchSize'] /
-                    self.defaultConfig['kerasEpochsPerEpoch'])
+            self.default_config['steps'] = int(
+                    len(dataset_string) / self.default_config['batch_size'] /
+                    self.default_config['kerasEpochsPerEpoch'])
 
-        chars, charDict, charDictList, classes = utils.getCharacterVars(
-                self.defaultConfig['indexIn'] or self.defaultConfig['embedding'],
-                self.defaultConfig['charSet'])
+        chars, char_dict, char_dict_list, classes = utils.get_character_vars(
+                self.default_config['index_in'] or self.default_config['embedding'],
+                self.default_config['char_set'])
 
-        self.defaultConfig['classes'] = classes
+        self.default_config['classes'] = classes
 
-        generateCharsInstance = generate_characters.generateChars(
-                self.defaultConfig['classes'],
-                self.defaultConfig['inputs'],
-                self.defaultConfig['testString'],
-                self.defaultConfig['outCharCount'],
-                self.defaultConfig['outputs'],
+        generate_chars_instance = generate_characters.GenerateChars(
+                self.default_config['classes'],
+                self.default_config['inputs'],
+                self.default_config['testString'],
+                self.default_config['out_char_count'],
+                self.default_config['outputs'],
                 chars,
-                charDictList)
-        gen = textGenerator.generator(self.defaultConfig['batchSize'],
-                                      datasetString,
-                                      self.defaultConfig['outputs'],
-                                      self.defaultConfig['indexIn'],
-                                      self.defaultConfig['inputs'],
-                                      self.defaultConfig['steps'],
-                                      charDictList,
-                                      charDict,
-                                      self.defaultConfig['classes'],
-                                      self.defaultConfig['changePerKerasEpoch'],
-                                      self.defaultConfig['embedding'])
-        if self.defaultConfig['inputGenerator'] == 'text':
-            inputGenerator = gen.inpGenerator()
+                char_dict_list)
+        gen = text_generator.Generator(self.default_config['batch_size'],
+                                       dataset_string,
+                                       self.default_config['outputs'],
+                                       self.default_config['index_in'],
+                                       self.default_config['inputs'],
+                                       self.default_config['steps'],
+                                       char_dict_list,
+                                       char_dict,
+                                       self.default_config['classes'],
+                                       self.default_config['change_per_keras_epoch'],
+                                       self.default_config['embedding'])
+        if self.default_config['inputGenerator'] == 'text':
+            inputGenerator = gen.inp_generator()
         else:
-            inputGenerator = self.defaultConfig['inputGenerator']
-        if not self.defaultConfig['decodeOutput']:
+            inputGenerator = self.default_config['inputGenerator']
+        if not self.default_config['decode_output']:
             tmp = np.zeros(
-                    (1, self.defaultConfig['classes'] * self.defaultConfig['inputs']))
+                    (1, self.default_config['classes'] * self.default_config['inputs']))
             tmp[0][:] = list(itertools.chain.from_iterable(
-                    [charDictList[self.defaultConfig['testString'][j]] for j in
-                     range(self.defaultConfig['inputs'])]))
-            self.defaultConfig['testString'] = tmp
-        tfGenerator = utils.getTfGenerator(inputGenerator,
-                                           self.defaultConfig['batchSize'],
-                                           self.defaultConfig['outputs'])
+                    [char_dict_list[self.default_config['testString'][j]] for j in
+                     range(self.default_config['inputs'])]))
+            self.default_config['testString'] = tmp
+        tfGenerator = utils.get_tf_generator(inputGenerator,
+                                             self.default_config['batch_size'],
+                                             self.default_config['outputs'])
         self.model.fit(tfGenerator,
-                       epochs=self.defaultConfig['epochs'] * self.defaultConfig[
+                       epochs=self.default_config['epochs'] * self.default_config[
                            'kerasEpochsPerEpoch'],
-                       verbose=self.defaultConfig['verbose'],
+                       verbose=self.default_config['verbose'],
                        max_queue_size=2,
                        use_multiprocessing=True,
-                       steps_per_epoch=self.defaultConfig['steps'],
+                       steps_per_epoch=self.default_config['steps'],
                        callbacks=[
                                tf.keras.callbacks.ModelCheckpoint(
-                                       'gdrive/My Drive/' + self.defaultConfig[
-                                           'weightFolderName'] + '/weights.{'
+                                       'gdrive/My Drive/' + self.default_config[
+                                           'weight_folder_name'] + '/weights.{'
                                                                  'epoch:02d}.hdf5',
                                        monitor='val_loss', verbose=1,
                                        save_best_only=False,
                                        save_weights_only=False, mode='auto', period=1),
                                generate_characters.GenerateCharsCallback(
-                                       generateCharsInstance,
-                                       self.defaultConfig['testString'],
-                                       self.defaultConfig['inputs'],
-                                       self.defaultConfig['decodeOutput'])
+                                       generate_chars_instance,
+                                       self.default_config['testString'],
+                                       self.default_config['inputs'],
+                                       self.default_config['decode_output'])
                                ])
 
     def run(self, datasetFilePath=None, datasetString=None, prepareText=True,
             fromGDrive=False):
         if fromGDrive and datasetFilePath is not None:
-            self.getDatasetFromGDrive(datasetFilePath)
-        datasetString = self.prepareText(datasetFilePath, datasetString, prepareText)
-        self.getModel()
-        self.train(datasetString=datasetString)
+            self.get_dataset_from_gdrive(datasetFilePath)
+        datasetString = self.prepare_text(datasetFilePath, datasetString, prepareText)
+        self.get_model()
+        self.train(dataset_string=datasetString)

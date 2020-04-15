@@ -21,7 +21,7 @@ def get_initial_binary_layer(initial_lstm, gpu, bidirectional,
                              inputs, unroll, classes, dropout,
                              two_dimensional, embedding, class_neurons):
     inp = Input(shape=(inputs,))
-    layer = Embedding(input_dim=inputs, output_dim=classes)(inp)
+    layer = Embedding(input_dim=classes, output_dim=classes)(inp)
     if not class_neurons:
         layer = Flatten()(layer)
     if dropout:

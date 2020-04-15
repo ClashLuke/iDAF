@@ -7,36 +7,53 @@ from .mlp import generate_characters, modelCreator, textGenerator, utils
 
 
 class CharNet:
-    defaultConfig = {'leakyRelu':            False, 'batchNorm': True,
-                     'trainNewModel':        True,
-                     'concatPreviousLayers': True, 'repeatInput': True, 'unroll': True,
-                     'splitInputs':          False, 'initialLSTM': False,
-                     'inputDense':           False,
-                     'splitLayer':           False, 'concatDense': True,
-                     'bidirectional':        True,
-                     'concatBeforeOutput':   True, 'drawModel': True, 'gpu': True,
-                     'neuronList':           None, 'indexIn': False,
-                     'classNeurons':         True,
-                     'decodeOutput':         True, 'tpu': False,
-                     'twoDimensional':       False,
-                     'embedding':            False,
-                     'inputs':               60, 'neuronsPerLayer': 120,
-                     'layerCount':           4, 'epochs': 1,
-                     'kerasEpochsPerEpoch':  256, 'learningRate': 0.005, 'outputs': 1,
-                     'dropout':              0.35, 'batchSize': 1024, 'valSplit': 0.1,
-                     'verbose':              1,
-                     'outCharCount':         512, 'changePerKerasEpoch': 0.25,
-                     'steps':                1000,
-                     'activation':           'gelu', 'weightFolderName': 'MLP_Weights',
-                     'inputGenerator':       'text',
-                     'loss':                 'sparse_categorical_crossentropy',
-                     'outputActivation':     'softmax',
-                     'metric':               'sparse_categorical_accuracy',
-                     'testString':           None, 'charSet': None
-                     }
-    model = None
-
     def __init__(self, config=None, configFilePath=None):
+        self.defaultConfig = {'leakyRelu':            False,
+                              'batchNorm':            True,
+                              'trainNewModel':        True,
+                              'concatPreviousLayers': True,
+                              'repeatInput':          True,
+                              'unroll':               True,
+                              'splitInputs':          False,
+                              'initialLSTM':          False,
+                              'inputDense':           False,
+                              'splitLayer':           False,
+                              'concatDense':          True,
+                              'bidirectional':        True,
+                              'concatBeforeOutput':   True,
+                              'drawModel':            True,
+                              'gpu':                  True,
+                              'neuronList':           None,
+                              'indexIn':              False,
+                              'classNeurons':         True,
+                              'decodeOutput':         True,
+                              'tpu':                  False,
+                              'twoDimensional':       False,
+                              'embedding':            False,
+                              'inputs':               60,
+                              'neuronsPerLayer':      120,
+                              'layerCount':           4,
+                              'epochs':               1,
+                              'kerasEpochsPerEpoch':  256,
+                              'learningRate':         0.005,
+                              'outputs':              1,
+                              'dropout':              0.35,
+                              'batchSize':            1024,
+                              'valSplit':             0.1,
+                              'verbose':              1,
+                              'outCharCount':         512,
+                              'changePerKerasEpoch':  0.25,
+                              'steps':                1000,
+                              'activation':           'gelu',
+                              'weightFolderName':     'MLP_Weights',
+                              'inputGenerator':       'text',
+                              'loss':                 'sparse_categorical_crossentropy',
+                              'outputActivation':     'softmax',
+                              'metric':               'sparse_categorical_accuracy',
+                              'testString':           None,
+                              'charSet':              None
+                              }
+        self.model = None
         if configFilePath is not None:
             import json
             with open(configFilePath, 'r') as configFile:
@@ -63,8 +80,9 @@ class CharNet:
             chars, _, _, _ = utils.getCharacterVars(self.defaultConfig['indexIn'],
                                                     self.defaultConfig['charSet'])
             print(
-                "WARNING: if your dataset is larger than 1GB and you have less than "
-                "8GiB of available RAM, you will receive a memory error.")
+                    "WARNING: if your dataset is larger than 1GB and you have less "
+                    "than "
+                    "8GiB of available RAM, you will receive a memory error.")
             datasetString = utils.reformatString(datasetString, chars)
         return datasetString
 
@@ -91,12 +109,12 @@ class CharNet:
                 print("FATAL: No dataset given. Exiting.")
                 return None
             self.defaultConfig['steps'] = int(
-                len(datasetString) / self.defaultConfig['batchSize'] /
-                self.defaultConfig['kerasEpochsPerEpoch'])
+                    len(datasetString) / self.defaultConfig['batchSize'] /
+                    self.defaultConfig['kerasEpochsPerEpoch'])
 
         chars, charDict, charDictList, classes = utils.getCharacterVars(
-            self.defaultConfig['indexIn'] or self.defaultConfig['embedding'],
-            self.defaultConfig['charSet'])
+                self.defaultConfig['indexIn'] or self.defaultConfig['embedding'],
+                self.defaultConfig['charSet'])
 
         self.defaultConfig['classes'] = classes
 
@@ -142,15 +160,17 @@ class CharNet:
                        steps_per_epoch=self.defaultConfig['steps'],
                        callbacks=[
                                tf.keras.callbacks.ModelCheckpoint(
-                                   'gdrive/My Drive/' + self.defaultConfig[
-                                       'weightFolderName'] + '/weights.{epoch:02d}.hdf5',
-                                   monitor='val_loss', verbose=1, save_best_only=False,
-                                   save_weights_only=False, mode='auto', period=1),
+                                       'gdrive/My Drive/' + self.defaultConfig[
+                                           'weightFolderName'] + '/weights.{'
+                                                                 'epoch:02d}.hdf5',
+                                       monitor='val_loss', verbose=1,
+                                       save_best_only=False,
+                                       save_weights_only=False, mode='auto', period=1),
                                generate_characters.GenerateCharsCallback(
-                                   generateCharsInstance,
-                                   self.defaultConfig['testString'],
-                                   self.defaultConfig['inputs'],
-                                   self.defaultConfig['decodeOutput'])
+                                       generateCharsInstance,
+                                       self.defaultConfig['testString'],
+                                       self.defaultConfig['inputs'],
+                                       self.defaultConfig['decodeOutput'])
                                ])
 
     def run(self, datasetFilePath=None, datasetString=None, prepareText=True,

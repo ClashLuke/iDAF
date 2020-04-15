@@ -19,9 +19,12 @@ values, so huge amounts of tweaking are not necessary.\
 
 If you're interested in running this code on one of
 Google's free cloud GPUs, you could follow the notebook in 
-[Colab](https://colab.research.google.com/github/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb)
+[Colab](https://colab.research.google.com/github/ClashLuke/CharNet/blob/master/CharNet.ipynb)
 or [Kaggle](https://www.kaggle.com/alfodawin/charnet). Note that Colab appears to have
-some issues with IPython right now, rendering it unusable.
+some issues with IPython right now, rendering it unusable. An example with extreme
+parameters can be found [on kaggle](https://www.kaggle.com/alfodawin/charnet?scriptVersionId=32084732)
+as well. It aims to illustrate that the model can converge and generalize well, even
+with high batch sizes and huge potential to overfit.
 
 If you're a hard-core user who wants to run it on their own machine, you should start
 with cloning this repository.

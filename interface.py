@@ -70,24 +70,6 @@ class CharNet:
         if self.default_config['testString'] is None:
             self.default_config['testString'] = utils.get_test_string()
 
-    def prepare_text(self, dataset_file_path=None, dataset_string=None,
-                     prepare_text=False):
-        if dataset_file_path is not None:
-            with open(dataset_file_path, 'r', errors='ignore') as dataset_file:
-                dataset_string = dataset_file.read()
-        if dataset_string is None:
-            print("FATAL: No dataset given. Exiting.")
-            exit()
-        if prepare_text:
-            chars, _, _, _ = utils.get_character_vars(self.default_config['index_in'],
-                                                      self.default_config['char_set'])
-            print(
-                    "WARNING: if your dataset is larger than 1GB and you have less "
-                    "than "
-                    "8GiB of available RAM, you will receive a memory error.")
-            dataset_string = utils.reformat_string(dataset_string, chars)
-        return dataset_string
-
     def get_model(self, model_compile=True):
         if self.default_config['tpu']:
             strategy = tf.distribute.MirroredStrategy()
@@ -99,19 +81,24 @@ class CharNet:
                                                  modelCompile=model_compile)
 
     @staticmethod
+    def load_text(dataset_file_path=None, dataset_array=None):
+        if dataset_file_path is not None:
+            with open(dataset_file_path, 'rb', errors='ignore') as dataset_file:
+                dataset_array = dataset_file.read()
+            dataset_array = np.frombuffer(dataset_array)
+        if dataset_array is None:
+            print("FATAL: No dataset given. Exiting.")
+            exit()
+        return dataset_array
+
+    @staticmethod
     def get_dataset_from_gdrive(dataset_file_name):
         utils.mount_drive()
         utils.get_dataset_from_gdrive(dataset_file_name)
 
     def train(self, dataset_file_path=None, dataset_array=None):
         if self.default_config['inputGenerator'] == 'text':
-            if dataset_file_path is not None:
-                with open(dataset_file_path, 'rb', errors='ignore') as dataset_file:
-                    dataset_array = dataset_file.read()
-                dataset_array = np.frombuffer(dataset_array)
-            if dataset_array is None:
-                print("FATAL: No dataset given. Exiting.")
-                return None
+
             self.default_config['steps'] = int(
                     len(dataset_array) / self.default_config['batch_size'] /
                     self.default_config['kerasEpochsPerEpoch'])
@@ -156,7 +143,7 @@ class CharNet:
                        epochs=self.default_config['epochs'] *
                               self.default_config['kerasEpochsPerEpoch'],
                        verbose=self.default_config['verbose'],
-                       max_queue_size=2,
+                       max_queue_size=256,
                        use_multiprocessing=True,
                        steps_per_epoch=self.default_config['steps'],
                        callbacks=[
@@ -174,10 +161,10 @@ class CharNet:
                                        self.default_config['decode_output'])
                                ])
 
-    def run(self, datasetFilePath=None, datasetString=None, prepareText=True,
+    def run(self, datasetFilePath=None, dataset_array=None, prepareText=True,
             fromGDrive=False):
         if fromGDrive and datasetFilePath is not None:
             self.get_dataset_from_gdrive(datasetFilePath)
-        datasetString = self.prepare_text(datasetFilePath, datasetString, prepareText)
+        dataset_array = self.load_text(datasetFilePath, dataset_array)
         self.get_model()
-        self.train(dataset_array=datasetString)
+        self.train(dataset_array=dataset_array)

@@ -1,6 +1,7 @@
-import .utils as utils
 import tensorflow as tf
 import tensorflow_addons as tfa
+
+from . import utils
 
 
 def addAdvancedLayers(layer, leakyRelu, batchNorm):
@@ -27,7 +28,7 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
                 layer = tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(classes,
                                                                                 kernel_initializer=tf.keras.initializers.lecun_normal(),
                                                                                 return_sequences=True))(
-                    layer)
+                        layer)
             else:
                 layer = tf.keras.layers.CuDNNLSTM(classes,
                                                   kernel_initializer=tf.keras.initializers.lecun_normal(),
@@ -35,16 +36,17 @@ def getInitialBinaryLayer(initialLSTM, gpu, bidirectional,
         else:
             if bidirectional:
                 layer = tf.keras.layers.Bidirectional(
-                    tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',
-                                         recurrent_activation='hard_sigmoid',
-                                         kernel_initializer=tf.keras.initializers.Orthogonal(),
-                                         unroll=unroll, return_sequences=True))(layer)
+                        tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',
+                                             recurrent_activation='hard_sigmoid',
+                                             kernel_initializer=tf.keras.initializers.Orthogonal(),
+                                             unroll=unroll, return_sequences=True))(
+                        layer)
             else:
                 layer = tf.keras.layers.LSTM(units=classes, activation='hard_sigmoid',
                                              recurrent_activation='hard_sigmoid',
                                              kernel_initializer=tf.keras.initializers.Orthogonal(),
                                              unroll=unroll, return_sequences=True)(
-                    layer)
+                        layer)
         layer = tf.keras.layers.GaussianDropout(dropout)(layer)
         if not twoDimensional:
             layer = tf.keras.layers.Flatten()(layer)
@@ -63,7 +65,7 @@ def getInputLayer(layer, inputs, classes, inputDense):
     if inputDense:
         layer = tf.keras.layers.Dense(units=inputs,
                                       kernel_initializer=tf.keras.initializers.Orthogonal())(
-            layer)
+                layer)
         layer = tfa.layers.GELU()(layer)
     return layer
 
@@ -72,7 +74,7 @@ def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, concatD
                     twoDimensional, dropout, depth):
     if twoDimensional:
         dense = lambda *x, **y: tf.keras.layers.TimeDistributed(
-            tf.keras.layers.Dense(*x, **y))
+                tf.keras.layers.Dense(*x, **y))
     else:
         dense = lambda *x, **y: tf.keras.layers.Dense(*x, **y)
     for i in range(layerCount - 1):
@@ -80,14 +82,14 @@ def getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm, concatD
         prev_in = layer
         for _ in range(depth):
             key_layer = dense(n, kernel_initializer=tf.keras.initializers.Orthogonal())(
-                layer)
+                    layer)
             query_layer = dense(n,
                                 kernel_initializer=tf.keras.initializers.Orthogonal())(
-                layer)
+                    layer)
             value_layer = tfa.layers.GELU()(key_layer)
             value_layer = dense(n,
                                 kernel_initializer=tf.keras.initializers.Orthogonal())(
-                value_layer)
+                    value_layer)
             value_layer = tf.keras.layers.Softmax()(value_layer)
             key_layer = tf.keras.layers.Multiply()([key_layer, value_layer])
             layer = tf.keras.layers.Add()([query_layer, key_layer])
@@ -107,7 +109,7 @@ def getOutput(layer, concatBeforeOutput, outputs, classes, outputActivation, los
         classes = 1
     layer = tf.keras.layers.Dense(units=outputs * classes, activation=outputActivation,
                                   kernel_initializer=tf.keras.initializers.Orthogonal())(
-        layer)
+            layer)
 
     if outputs > 1:
         layer = tf.keras.layers.Reshape((outputs, classes))(layer)
@@ -158,7 +160,7 @@ def getModel(leakyRelu=True, batchNorm=True, trainNewModel=True,
                                                twoDimensional, embedding)
         layer = tf.keras.layers.Dense(inputs,
                                       kernel_initializer=tf.keras.initializers.Orthogonal())(
-            layer)
+                layer)
         layer = tf.keras.layers.BatchNormalization()(layer)
         layer = tfa.layers.GELU()(layer)
         layer = getHiddenLayers(layer, layerCount, neuronList, leakyRelu, batchNorm,

@@ -1,1 +1,1 @@
-from interface import CharNet
+from .interface import CharNet

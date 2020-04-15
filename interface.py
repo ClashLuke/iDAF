@@ -85,7 +85,7 @@ class CharNet:
         if dataset_file_path is not None:
             with open(dataset_file_path, 'rb') as dataset_file:
                 dataset_array = dataset_file.read()
-            dataset_array = np.frombuffer(dataset_array)
+            dataset_array = np.frombuffer(dataset_array, dtype=np.uint8)
         if dataset_array is None:
             print("FATAL: No dataset given. Exiting.")
             exit()

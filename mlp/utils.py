@@ -18,8 +18,9 @@ def get_previous_weights_from_gdrive(weight_folder_name):
 
 
 def get_latest_model_name(weight_folder_name):
-    all_files = [(name, os.path.getmtime(''.join(['./', weight_folder_name, '/', name])))
-                 for name in os.listdir(''.join(['./', weight_folder_name, '/']))]
+    all_files = [
+            (name, os.path.getmtime(''.join(['./', weight_folder_name, '/', name])))
+            for name in os.listdir(''.join(['./', weight_folder_name, '/']))]
     latest_uploaded_file = sorted(all_files, key=lambda x: -x[1])[0][0]
     return ''.join(['./', weight_folder_name, '/', latest_uploaded_file])
 
@@ -48,8 +49,9 @@ def get_character_vars(index_in, chars=None):
     if index_in:
         char_dict_list = {chars[i]: 1 - i / classes / 2 for i in range(classes)}
     else:
-        char_dict_list = {chars[i]: get_list_from_char(chars[i], char_dict, classes) for i in
-                        range(classes)}
+        char_dict_list = {chars[i]: get_list_from_char(chars[i], char_dict, classes) for
+                          i in
+                          range(classes)}
     return chars, char_dict, char_dict_list, classes
 
 
@@ -57,7 +59,7 @@ def reformat_string(input_string, chars):
     """
     WARNING: This function removes all characters it has no clue about.
     This includes anything related to numbers as well as most symbols.
-    If those characters are required in any way, do some preproprecessing,
+    If those characters are required in any way, do some preprocessing,
     such as replacing '1' with 'one'.
     """
     input_string = ' '.join(input_string.split())
@@ -91,18 +93,12 @@ turn off in a similar way as the red ones."""
 
 
 def get_tf_generator(python_generator, batch_size, outputs):
-    if outputs > 1:
-        tf_generator = tf.data.Dataset.from_generator(
-                generator=lambda: map(tuple, python_generator),
-                output_types=(tf.float32, tf.float32),
-                output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs, 1)))
-                )
-    else:
-        tf_generator = tf.data.Dataset.from_generator(
-                generator=lambda: map(tuple, python_generator),
-                output_types=(tf.float32, tf.float32),
-                output_shapes=(tf.TensorShape((None,)), tf.TensorShape((outputs,)))
-                )
+    output_shape = (outputs, 1) if outputs > 1 else (1,)
+    tf_generator = tf.data.Dataset.from_generator(
+        generator=lambda: map(tuple, python_generator),
+        output_types=(tf.float32, tf.float32),
+        output_shapes=(tf.TensorShape((None,)), tf.TensorShape(output_shape))
+        )
     tf_generator = tf_generator.batch(batch_size)
     tf_generator = tf_generator.shuffle(16, reshuffle_each_iteration=True)
     tf_generator = tf_generator.repeat(batch_size)

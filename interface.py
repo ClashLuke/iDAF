@@ -8,51 +8,51 @@ from .mlp import generate_characters, model_creator, text_generator, utils
 
 class CharNet:
     def __init__(self, config=None, config_file_path=None):
-        self.default_config = {'leaky_relu':            False,
-                               'batch_norm':            True,
-                               'trainNewModel':        True,
-                               'concatPreviousLayers': True,
-                               'repeatInput':          True,
-                               'unroll':               True,
-                               'splitInputs':          False,
-                               'initial_lstm':          False,
-                               'input_dense':           False,
-                               'splitLayer':           False,
-                               'concat_dense':          True,
-                               'bidirectional':        True,
+        self.default_config = {'leaky_relu':             False,
+                               'batch_norm':             True,
+                               'trainNewModel':          True,
+                               'concatPreviousLayers':   True,
+                               'repeatInput':            True,
+                               'unroll':                 True,
+                               'splitInputs':            False,
+                               'initial_lstm':           False,
+                               'input_dense':            False,
+                               'splitLayer':             False,
+                               'concat_dense':           True,
+                               'bidirectional':          True,
                                'concat_before_output':   True,
-                               'draw_model':            True,
-                               'gpu':                  True,
-                               'neuron_list':           None,
-                               'index_in':              False,
-                               'class_neurons':         True,
-                               'decode_output':         True,
-                               'tpu':                  False,
-                               'two_dimensional':       False,
-                               'embedding':            False,
-                               'inputs':               60,
+                               'draw_model':             True,
+                               'gpu':                    True,
+                               'neuron_list':            None,
+                               'index_in':               False,
+                               'class_neurons':          True,
+                               'decode_output':          True,
+                               'tpu':                    False,
+                               'two_dimensional':        False,
+                               'embedding':              False,
+                               'inputs':                 60,
                                'neurons_per_layer':      120,
-                               'layer_count':           4,
-                               'epochs':               1,
-                               'kerasEpochsPerEpoch':  256,
-                               'learning_rate':         0.005,
-                               'outputs':              1,
-                               'dropout':              0.35,
-                               'batch_size':            1024,
-                               'valSplit':             0.1,
-                               'verbose':              1,
+                               'layer_count':            4,
+                               'epochs':                 1,
+                               'kerasEpochsPerEpoch':    256,
+                               'learning_rate':          0.005,
+                               'outputs':                1,
+                               'dropout':                0.35,
+                               'batch_size':             1024,
+                               'valSplit':               0.1,
+                               'verbose':                1,
                                'out_char_count':         512,
-                               'change_per_keras_epoch':  0.25,
-                               'steps':                1000,
-                               'activation':           'gelu',
+                               'change_per_keras_epoch': 0.25,
+                               'steps':                  1000,
+                               'activation':             'gelu',
                                'weight_folder_name':     'MLP_Weights',
-                               'inputGenerator':       'text',
+                               'inputGenerator':         'text',
                                'loss':
-                                   'sparse_categorical_crossentropy',
-                               'output_activation':     'softmax',
-                               'metric':               'sparse_categorical_accuracy',
-                               'testString':           None,
-                               'char_set':              None
+                                                         'sparse_categorical_crossentropy',
+                               'output_activation':      'softmax',
+                               'metric':                 'sparse_categorical_accuracy',
+                               'testString':             None,
+                               'char_set':               None
                                }
         self.model = None
         if config_file_path is not None:
@@ -70,7 +70,8 @@ class CharNet:
         if self.default_config['testString'] is None:
             self.default_config['testString'] = utils.get_test_string()
 
-    def prepare_text(self, dataset_file_path=None, dataset_string=None, prepare_text=False):
+    def prepare_text(self, dataset_file_path=None, dataset_string=None,
+                     prepare_text=False):
         if dataset_file_path is not None:
             with open(dataset_file_path, 'r', errors='ignore') as dataset_file:
                 dataset_string = dataset_file.read()
@@ -97,20 +98,22 @@ class CharNet:
             self.model = model_creator.get_model(**self.default_config,
                                                  modelCompile=model_compile)
 
-    def get_dataset_from_gdrive(self, dataset_file_name):
+    @staticmethod
+    def get_dataset_from_gdrive(dataset_file_name):
         utils.mount_drive()
         utils.get_dataset_from_gdrive(dataset_file_name)
 
-    def train(self, dataset_file_path=None, dataset_string=None):
+    def train(self, dataset_file_path=None, dataset_array=None):
         if self.default_config['inputGenerator'] == 'text':
             if dataset_file_path is not None:
-                with open(dataset_file_path, 'r', errors='ignore') as dataset_file:
-                    dataset_string = dataset_file.read()
-            if dataset_string is None:
+                with open(dataset_file_path, 'rb', errors='ignore') as dataset_file:
+                    dataset_array = dataset_file.read()
+                dataset_array = np.frombuffer(dataset_array)
+            if dataset_array is None:
                 print("FATAL: No dataset given. Exiting.")
                 return None
             self.default_config['steps'] = int(
-                    len(dataset_string) / self.default_config['batch_size'] /
+                    len(dataset_array) / self.default_config['batch_size'] /
                     self.default_config['kerasEpochsPerEpoch'])
 
         chars, char_dict, char_dict_list, classes = utils.get_character_vars(
@@ -128,7 +131,7 @@ class CharNet:
                 chars,
                 char_dict_list)
         gen = text_generator.Generator(self.default_config['batch_size'],
-                                       dataset_string,
+                                       dataset_array,
                                        self.default_config['outputs'],
                                        self.default_config['index_in'],
                                        self.default_config['inputs'],
@@ -139,9 +142,9 @@ class CharNet:
                                        self.default_config['change_per_keras_epoch'],
                                        self.default_config['embedding'])
         if self.default_config['inputGenerator'] == 'text':
-            inputGenerator = gen.inp_generator()
+            input_generator = gen.inp_generator()
         else:
-            inputGenerator = self.default_config['inputGenerator']
+            input_generator = self.default_config['inputGenerator']
         if not self.default_config['decode_output']:
             tmp = np.zeros(
                     (1, self.default_config['classes'] * self.default_config['inputs']))
@@ -149,12 +152,9 @@ class CharNet:
                     [char_dict_list[self.default_config['testString'][j]] for j in
                      range(self.default_config['inputs'])]))
             self.default_config['testString'] = tmp
-        tfGenerator = utils.get_tf_generator(inputGenerator,
-                                             self.default_config['batch_size'],
-                                             self.default_config['outputs'])
-        self.model.fit(tfGenerator,
-                       epochs=self.default_config['epochs'] * self.default_config[
-                           'kerasEpochsPerEpoch'],
+        self.model.fit(input_generator,
+                       epochs=self.default_config['epochs'] *
+                              self.default_config['kerasEpochsPerEpoch'],
                        verbose=self.default_config['verbose'],
                        max_queue_size=2,
                        use_multiprocessing=True,
@@ -163,7 +163,7 @@ class CharNet:
                                tf.keras.callbacks.ModelCheckpoint(
                                        'gdrive/My Drive/' + self.default_config[
                                            'weight_folder_name'] + '/weights.{'
-                                                                 'epoch:02d}.hdf5',
+                                                                   'epoch:02d}.hdf5',
                                        monitor='val_loss', verbose=1,
                                        save_best_only=False,
                                        save_weights_only=False, mode='auto', period=1),
@@ -180,4 +180,4 @@ class CharNet:
             self.get_dataset_from_gdrive(datasetFilePath)
         datasetString = self.prepare_text(datasetFilePath, datasetString, prepareText)
         self.get_model()
-        self.train(dataset_string=datasetString)
+        self.train(dataset_array=datasetString)

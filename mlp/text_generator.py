@@ -1,96 +1,37 @@
-import itertools
-
 import numpy as np
+from tensorflow.keras.utils import Sequence
 
 
-class Generator:
-    def __init__(self, batchsize, txt, outputs, index_in, inputs, steps, char_dict_list,
-                 char_dict, classes, change_per_keras_epoch, embedding):
-        self.batchsize = batchsize
-        self.txt = txt
-        self.txtLen = len(txt) - inputs - batchsize - 2
-        self.outputs = outputs
-        self.indexIn = index_in or embedding
+class Generator(Sequence):
+    def __init__(self, batch_size, dataset, outputs, index_in, inputs, steps,
+                 char_dict_list, char_dict, classes, change_per_keras_epoch, embedding,
+                 base_batch=None):
         self.inputs = inputs
-        self.steps = steps
-        self.charDictList = char_dict_list
-        self.charDict = char_dict
-        self.classes = classes
-        self.changePerKerasEpoch = change_per_keras_epoch
+        self.base_batch = batch_size if base_batch is None else base_batch
+        self.batch_size = batch_size
+        self.dataset = dataset
+        self.dset_len = dataset.shape[0] - inputs
+        self.output_indices = 0
+        self.input_indices = 0
+        self._set_indices()
 
-    def inp_generator(self):
-        n = 0
-        # Using lists instead of numpy arrays is about seven times slower
-        if self.outputs == 1:
-            tmp_out = np.zeros((self.batchsize, 1), dtype=np.float32)
-            if self.indexIn:
-                tmp_in = np.zeros((self.batchsize, self.inputs), dtype=np.float32)
-                tmp_in[-1][:] = [self.charDictList[self.txt[j]] for j in
-                                 range(self.inputs)]
-                tmp_out[0][0] = self.charDict[self.txt[self.inputs]]
-                while True:
-                    for b in range(self.batchsize):
-                        tmp_in[b][:] = np.append(tmp_in[b - 1][1:], self.charDictList[
-                            self.txt[self.inputs + b + n]])
-                        tmp_out[b][0] = self.charDict[self.txt[self.inputs + 1 + b + n]]
-                    for b in range(self.batchsize):
-                        yield tmp_in[b], tmp_out[b]
-                    n += self.batchsize
-                    if n >= self.txtLen:
-                        n = 0
-            else:
-                tmp_in = np.zeros((self.batchsize, self.inputs * self.classes),
-                                  dtype=np.float32)
-                tmp_in[-1][:] = list(itertools.chain.from_iterable(
-                        [self.charDictList[self.txt[j]] for j in range(self.inputs)]))
-                tmp_out[0][0] = self.charDict[self.txt[self.inputs]]
-                while True:
-                    for b in range(self.batchsize):
-                        tmp_in[b][:] = np.append(tmp_in[b - 1][self.classes:],
-                                                 self.charDictList[
-                                                     self.txt[self.inputs + b + n]])
-                        tmp_out[b][0] = self.charDict[self.txt[self.inputs + 1 + b + n]]
-                    for b in range(self.batchsize):
-                        yield tmp_in[b], tmp_out[b]
-                    n += self.batchsize
-                    if n >= self.txtLen:
-                        n = 0
-        else:
-            out = self.inputs + self.outputs
-            tmp_out = np.zeros((self.batchsize, self.outputs, 1), dtype=np.float32)
-            if self.indexIn:
-                tmp_in = np.zeros((self.batchsize, self.inputs), dtype=np.float32)
-                tmp_in[-1][:] = [self.charDictList[self.txt[j]] for j in
-                                 range(self.inputs)]
-                tmp_out[0][:] = [[self.charDict[self.txt[self.inputs + j]]] for j in
-                                 range(self.outputs)]
-                while True:
-                    for b in range(self.batchsize):
-                        tmp_in[b][:] = np.append(tmp_in[b - 1][1:], self.charDictList[
-                            self.txt[self.inputs + b + n]])
-                        tmp_out[b][:] = np.append(tmp_out[b - 1][1:], self.charDict[
-                            self.txt[out + 1 + b + n]]).reshape(self.outputs, 1)
-                    for b in range(self.batchsize):
-                        yield tmp_in[b], tmp_out[b]
-                    n += self.batchsize
-                    if n >= self.txtLen:
-                        n = 0
-            else:
-                tmp_in = np.zeros((self.batchsize, self.inputs * self.classes),
-                                  dtype=np.float32)
-                tmp_in[-1][:] = list(itertools.chain.from_iterable(
-                        [self.charDictList[self.txt[j]] for j in range(self.inputs)]))
-                tmp_out[0][:] = [[self.charDict[self.txt[self.inputs + j]]] for j in
-                                 range(self.outputs)]
-                while True:
-                    for b in range(self.batchsize):
-                        tmp_in[b][:] = np.append(tmp_in[b - 1][self.classes:],
-                                                 self.charDictList[
-                                                     self.txt[self.inputs + b + n]])
-                        tmp_out[b][:] = np.append(tmp_out[b - 1][1:], self.charDict[
-                            self.txt[out + 1 + b + n]]).reshape(self.outputs, 1)
-                    for b in range(self.batchsize):
-                        yield tmp_in[b], tmp_out[b]
-                    n += self.batchsize
-                    if n >= self.txtLen:
-                        n = 0
+    def _set_indices(self):
+        batch_indices = np.arange(self.batch_size)
+        self.output_indices = batch_indices + self.inputs
+        self.input_indices = (batch_indices.reshape(1, -1) +
+                              np.arange(self.inputs).reshape(-1, 1))
+
+    def __len__(self):
+        return self.dset_len // self.batch_size - 1
+
+    def __getitem__(self, idx):
+        return (self.dataset[self.input_indices + idx],
+                self.dataset[self.output_indices + idx])
+
+    def add_batch(self, batch):
+        self.batch_size += batch
+        self._set_indices()
+
+    def on_epoch_end(self):
+        # A more robust linear weight decay, see https://arxiv.org/pdf/1711.00489.pdf
+        self.add_batch(self.batch_size)

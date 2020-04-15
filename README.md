@@ -31,7 +31,7 @@ interface and then run the training.
 ```PYTHON
 from CharNet import CharNet
 network = CharNet()
-network.run(datasetFilePath='dataset.txt',
+network.run(datasetFilePath='dataset.dataset',
             prepare_text=False)
 keras_model = network.model
 ```

@@ -18,8 +18,10 @@ values, so huge amounts of tweaking are not necessary.\
 ### Getting Started
 
 If you're interested in running this code on one of
-[Google's free cloud GPUs](colab.research.google.com/), you could follow the notebook in 
-[here](https://colab.research.google.com/github/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb).
+Google's free cloud GPUs, you could follow the notebook in 
+[Colab](https://colab.research.google.com/github/ClashLuke/CharNet/blob/master/CharNet_Notebook.ipynb)
+or [Kaggle](https://www.kaggle.com/alfodawin/charnet). Note that Colab appears to have
+some issues with IPython right now, rendering it unusable.
 
 If you're a hard-core user who wants to run it on their own machine, you should start
 with cloning this repository.

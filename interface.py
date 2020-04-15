@@ -30,15 +30,15 @@ class CharNet:
                                'tpu':                    False,
                                'two_dimensional':        False,
                                'embedding':              False,
-                               'inputs':                 60,
-                               'neurons_per_layer':      120,
+                               'inputs':                 10,
+                               'neurons_per_layer':      20,
                                'layer_count':            4,
                                'epochs':                 1,
                                'kerasEpochsPerEpoch':    256,
                                'learning_rate':          0.005,
                                'outputs':                1,
                                'dropout':                0.35,
-                               'batch_size':             1024,
+                               'batch_size':             16,
                                'valSplit':               0.1,
                                'verbose':                1,
                                'out_char_count':         512,
@@ -116,7 +116,7 @@ class CharNet:
                 self.default_config['out_char_count'],
                 self.default_config['outputs'],
                 chars,
-                char_dict_list)
+                char_dict)
         if self.default_config['inputGenerator'] == 'text':
             input_generator = text_generator.Generator(
                     self.default_config['batch_size'],
@@ -140,12 +140,8 @@ class CharNet:
                      range(self.default_config['inputs'])]))
             self.default_config['testString'] = tmp
         self.model.fit(input_generator,
-                       epochs=self.default_config['epochs'] *
-                              self.default_config['kerasEpochsPerEpoch'],
+                       epochs=self.default_config['epochs'],
                        verbose=self.default_config['verbose'],
-                       max_queue_size=256,
-                       use_multiprocessing=True,
-                       steps_per_epoch=self.default_config['steps'],
                        callbacks=[
                                tf.keras.callbacks.ModelCheckpoint(
                                        'gdrive/My Drive/' + self.default_config[

@@ -6,52 +6,31 @@ import tensorflow as tf
 
 class GenerateChars:
     def __init__(self, classes, inputs, input_string, out_char_count, outputs, chars,
-                 char_dict_list):
+                 char_dict):
         self.classes = classes
         self.inputs = inputs
         self.outputs = outputs
         self.chars = chars
-        self.charDictList = char_dict_list
+        self.char_dict = char_dict
         self.inputString = input_string
         self.outCharCount = out_char_count
 
     def genKey(self, inp, model):
-        try:
-            topred = np.zeros((1, self.classes * self.inputs))
-            topred[0][:] = inp[:]
-        except:
-            topred = np.zeros((1, self.inputs))
-            topred[0][:] = inp[:]
-        if self.outputs == 1:
-            pred = np.argmax(model.predict(topred)[0])
-            pred = [self.chars[pred]]
-        else:
-            pred = model.predict(topred)[0]
-            pred = [np.argmax(p) for p in pred]
-            pred = [self.chars[p] for p in pred]
+        topred = np.array(inp).reshape(1, -1)
+        pred = np.argmax(model.predict(topred)[0])
         return pred
 
     def gen_recurse(self, instr, model):
-        try:
-            inp = list(itertools.chain.from_iterable(
-                    [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
-                    ))
-            for i in range(self.outCharCount):
-                res = self.genKey(inp[i * self.classes * self.outputs:], model)
-                inp = inp + list(
-                    itertools.chain.from_iterable([self.charDictList[r] for r in res]))
-        except:
-            inp = [self.charDictList[self.inputString[i]] for i in range(self.inputs)]
-            for i in range(self.outCharCount):
-                res = self.genKey(inp[i * self.outputs:], model)
-                inp = inp + [self.charDictList[r] for r in res]
+        inp = [self.char_dict[self.inputString[i]] for i in range(self.inputs)]
+        for i in range(self.outCharCount):
+            inp.append(self.genKey(inp[i:], model))
         return inp
 
     def gen_str(self, instr, model):
         rec_out = self.gen_recurse(instr, model)
-        out = ''.join(
-                self.chars[np.argmax(rec_out[i * self.classes:(i + 1) * self.classes])]
-                for i in range(self.outCharCount))
+        out = ''.join(self.chars[np.argmax(rec_out[i * self.classes:
+                                                   (i + 1) * self.classes])]
+                      for i in range(self.outCharCount))
         return out
 
 

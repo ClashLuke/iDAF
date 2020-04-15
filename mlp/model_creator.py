@@ -48,13 +48,10 @@ def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
         n = neuron_list[i]
         prev_in = layer
         for _ in range(depth):
-            key_layer = Dense(n, kernel_initializer=initializer())(
-                    layer)
-            query_layer = Dense(n, kernel_initializer=initializer())(
-                    layer)
+            key_layer = Dense(n, kernel_initializer=initializer())(layer)
+            query_layer = Dense(n, kernel_initializer=initializer())(layer)
             value_layer = GELU()(key_layer)
-            value_layer = Dense(n, kernel_initializer=initializer())(
-                    value_layer)
+            value_layer = Dense(n, kernel_initializer=initializer())(value_layer)
             value_layer = Softmax(axis=-1-class_neurons)(value_layer)
             key_layer = Multiply()([key_layer, value_layer])
             layer = Add()([query_layer, key_layer])

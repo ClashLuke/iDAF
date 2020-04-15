@@ -83,7 +83,7 @@ class CharNet:
     @staticmethod
     def load_text(dataset_file_path=None, dataset_array=None):
         if dataset_file_path is not None:
-            with open(dataset_file_path, 'rb', errors='ignore') as dataset_file:
+            with open(dataset_file_path, 'rb') as dataset_file:
                 dataset_array = dataset_file.read()
             dataset_array = np.frombuffer(dataset_array)
         if dataset_array is None:

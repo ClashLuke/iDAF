@@ -117,19 +117,19 @@ class CharNet:
                 self.default_config['outputs'],
                 chars,
                 char_dict_list)
-        gen = text_generator.Generator(self.default_config['batch_size'],
-                                       dataset_array,
-                                       self.default_config['outputs'],
-                                       self.default_config['index_in'],
-                                       self.default_config['inputs'],
-                                       self.default_config['steps'],
-                                       char_dict_list,
-                                       char_dict,
-                                       self.default_config['classes'],
-                                       self.default_config['change_per_keras_epoch'],
-                                       self.default_config['embedding'])
         if self.default_config['inputGenerator'] == 'text':
-            input_generator = gen.inp_generator()
+            input_generator = text_generator.Generator(
+                    self.default_config['batch_size'],
+                    dataset_array,
+                    self.default_config['outputs'],
+                    self.default_config['index_in'],
+                    self.default_config['inputs'],
+                    self.default_config['steps'],
+                    char_dict_list,
+                    char_dict,
+                    self.default_config['classes'],
+                    self.default_config['change_per_keras_epoch'],
+                    self.default_config['embedding'])
         else:
             input_generator = self.default_config['inputGenerator']
         if not self.default_config['decode_output']:

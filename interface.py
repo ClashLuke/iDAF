@@ -1,13 +1,13 @@
-import CharNet.mlp.generateCharacters as generateCharacters
-import CharNet.mlp.textGenerator as textGenerator
-import CharNet.mlp.modelCreator as modelCreator
-import CharNet.mlp.utils as utils
+import .mlp.generateCharacters as generateCharacters
+import .mlp.textGenerator as textGenerator
+import .mlp.modelCreator as modelCreator
+import .mlp.utils as utils
 
 import numpy as np
 import itertools
 import tensorflow as tf
 
-class charnet():
+class CharNet:
   defaultConfig = {'leakyRelu': False, 'batchNorm': True, 'trainNewModel': True,
              'concatPreviousLayers': True, 'repeatInput': True, 'unroll': True,
              'splitInputs': False, 'initialLSTM': False,'inputDense': False,

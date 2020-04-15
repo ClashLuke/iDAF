@@ -2,7 +2,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.initializers import orthogonal as initializer
 from tensorflow.keras.layers import (Add, BatchNormalization, Concatenate, Dense,
                                      Embedding, Flatten, GaussianDropout, Input,
-                                     Multiply, Softmax, Average)
+                                     Multiply, Softmax, GlobalAveragePooling1D)
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
 from tensorflow_addons.layers import GELU
@@ -68,7 +68,7 @@ def get_output(layer, concat_before_output, outputs, classes, output_activation,
     if 'crossentropy' not in loss:
         classes = 1
     if class_neurons:
-        layer = Average()(layer)
+        layer = GlobalAveragePooling1D()(layer)
     layer = Dense(units=256, activation=output_activation,
                   kernel_initializer=initializer())(layer)
     return layer

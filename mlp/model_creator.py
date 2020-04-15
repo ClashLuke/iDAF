@@ -23,7 +23,7 @@ def get_initial_binary_layer(initial_lstm, gpu, bidirectional,
     inp = Input(shape=(inputs,))
     layer = Embedding(input_dim=256, output_dim=classes)(inp)
     if not class_neurons:
-        layer = Average()(layer)
+        layer = Flatten()(layer)
     if dropout:
         layer = GaussianDropout(dropout)(layer)
     return layer, inp
@@ -68,7 +68,7 @@ def get_output(layer, concat_before_output, outputs, classes, output_activation,
     if 'crossentropy' not in loss:
         classes = 1
     if class_neurons:
-        layer = Flatten()(layer)
+        layer = Average()(layer)
     layer = Dense(units=256, activation=output_activation,
                   kernel_initializer=initializer())(layer)
     return layer

@@ -4,7 +4,7 @@ from tensorflow.keras.utils import Sequence
 
 class Generator(Sequence):
     def __init__(self, batch_size, dataset, outputs, index_in, inputs, steps,
-                 char_dict_list, char_dict, classes, change_per_keras_epoch, embedding,
+                 change_per_keras_epoch, embedding,
                  base_batch=None):
         self.inputs = inputs
         self.base_batch = batch_size if base_batch is None else base_batch
@@ -19,8 +19,8 @@ class Generator(Sequence):
     def _set_indices(self):
         batch_indices = np.arange(self.batch_size)
         self.output_indices = batch_indices + self.inputs
-        self.input_indices = (batch_indices.reshape(1, -1) +
-                              np.arange(self.inputs).reshape(-1, 1))
+        self.input_indices = (batch_indices.reshape(-1, 1) +
+                              np.arange(self.inputs).reshape(1, -1))
 
     def __len__(self):
         return self.len

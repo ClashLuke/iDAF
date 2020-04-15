@@ -2,7 +2,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.initializers import orthogonal as initializer
 from tensorflow.keras.layers import (Add, BatchNormalization, Concatenate, Dense,
                                      Embedding, Flatten, GaussianDropout, Input,
-                                     Multiply, Softmax)
+                                     Multiply, Softmax, Average)
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
 from tensorflow_addons.layers import GELU
@@ -23,7 +23,7 @@ def get_initial_binary_layer(initial_lstm, gpu, bidirectional,
     inp = Input(shape=(inputs,))
     layer = Embedding(input_dim=256, output_dim=classes)(inp)
     if not class_neurons:
-        layer = Flatten()(layer)
+        layer = Average()(layer)
     if dropout:
         layer = GaussianDropout(dropout)(layer)
     return layer, inp
@@ -69,7 +69,7 @@ def get_output(layer, concat_before_output, outputs, classes, output_activation,
         classes = 1
     if class_neurons:
         layer = Flatten()(layer)
-    layer = Dense(units=classes, activation=output_activation,
+    layer = Dense(units=256, activation=output_activation,
                   kernel_initializer=initializer())(layer)
     return layer
 

@@ -52,7 +52,6 @@ class CharNet:
                                'output_activation':      'softmax',
                                'metric':                 'sparse_categorical_accuracy',
                                'testString':             None,
-                               'char_set':               None
                                }
         self.model = None
         if config_file_path is not None:
@@ -65,8 +64,6 @@ class CharNet:
                 self.default_config[key] = value
         else:
             print("No config found. Using default config.")
-        if self.default_config['char_set'] is None:
-            self.default_config['char_set'] = utils.get_chars()
         if self.default_config['testString'] is None:
             self.default_config['testString'] = utils.get_test_string()
 
@@ -103,20 +100,11 @@ class CharNet:
                     len(dataset_array) / self.default_config['batch_size'] /
                     self.default_config['kerasEpochsPerEpoch'])
 
-        chars, char_dict, char_dict_list, classes = utils.get_character_vars(
-                self.default_config['index_in'] or self.default_config['embedding'],
-                self.default_config['char_set'])
-
-        self.default_config['classes'] = classes
-
         generate_chars_instance = generate_characters.GenerateChars(
-                self.default_config['classes'],
                 self.default_config['inputs'],
                 self.default_config['testString'],
                 self.default_config['out_char_count'],
-                self.default_config['outputs'],
-                chars,
-                char_dict)
+                self.default_config['outputs'])
         if self.default_config['inputGenerator'] == 'text':
             input_generator = text_generator.Generator(
                     self.default_config['batch_size'],
@@ -125,20 +113,10 @@ class CharNet:
                     self.default_config['index_in'],
                     self.default_config['inputs'],
                     self.default_config['steps'],
-                    char_dict_list,
-                    char_dict,
-                    self.default_config['classes'],
                     self.default_config['change_per_keras_epoch'],
                     self.default_config['embedding'])
         else:
             input_generator = self.default_config['inputGenerator']
-        if not self.default_config['decode_output']:
-            tmp = np.zeros(
-                    (1, self.default_config['classes'] * self.default_config['inputs']))
-            tmp[0][:] = list(itertools.chain.from_iterable(
-                    [char_dict_list[self.default_config['testString'][j]] for j in
-                     range(self.default_config['inputs'])]))
-            self.default_config['testString'] = tmp
         self.model.fit(input_generator,
                        epochs=self.default_config['epochs'],
                        verbose=self.default_config['verbose'],

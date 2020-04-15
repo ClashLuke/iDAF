@@ -19,10 +19,11 @@ def add_advanced_layers(layer, leaky_relu, batch_norm):
 
 def get_initial_binary_layer(initial_lstm, gpu, bidirectional,
                              inputs, unroll, classes, dropout,
-                             two_dimensional, embedding):
+                             two_dimensional, embedding, class_neurons):
     inp = Input(shape=(inputs,))
     layer = Embedding(input_dim=inputs, output_dim=classes)(inp)
-    layer = Flatten()(layer)
+    if not class_neurons:
+        layer = Flatten()(layer)
     if dropout:
         layer = GaussianDropout(dropout)(layer)
     return layer, inp
@@ -42,7 +43,7 @@ def get_input_layer(layer, inputs, classes, input_dense):
 
 
 def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
-                      concat_dense, two_dimensional, dropout, depth):
+                      concat_dense, two_dimensional, dropout, depth, class_neurons):
     for i in range(layer_count - 1):
         n = neuron_list[i]
         prev_in = layer
@@ -54,7 +55,7 @@ def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
             value_layer = GELU()(key_layer)
             value_layer = Dense(n, kernel_initializer=initializer())(
                     value_layer)
-            value_layer = Softmax()(value_layer)
+            value_layer = Softmax(axis=-1-class_neurons)(value_layer)
             key_layer = Multiply()([key_layer, value_layer])
             layer = Add()([query_layer, key_layer])
             layer = BatchNormalization(axis=1)(layer)
@@ -66,10 +67,12 @@ def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
 
 
 def get_output(layer, concat_before_output, outputs, classes, output_activation, loss,
-               two_dimensional):
+               two_dimensional, class_neurons):
     if 'crossentropy' not in loss:
         classes = 1
-    layer = Dense(units=outputs * classes, activation=output_activation,
+    if class_neurons:
+        layer = Flatten()(layer)
+    layer = Dense(units=classes, activation=output_activation,
                   kernel_initializer=initializer())(layer)
     return layer
 
@@ -93,7 +96,7 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
               bidirectional=True, modelCompile=True,
               concatBeforeOutput=True, drawModel=True, gpu=True,
               neuronList=None, indexIn=False, classNeurons=True,
-              twoDimensional=True, embedding=False,
+              twoDimensional=True, embedding=False, class_neurons=True,
               inputs=60, neuronsPerLayer=120, layerCount=4,
               learningRate=0.005, classes=30, outputs=1, dropout=0.35,
               weightFolderName='MLP_Weights', outputActivation='softmax',
@@ -117,12 +120,13 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
             layer, inp = get_initial_binary_layer(initialLSTM, gpu, bidirectional,
                                                   inputs,
                                                   unroll, classes, inputDense,
-                                                  twoDimensional, embedding)
+                                                  twoDimensional, embedding,
+                                                  class_neurons)
         layer = get_hidden_layers(layer, layerCount, neuronList, leakyRelu, batchNorm,
-                                  concatDense, twoDimensional, dropout, depth)
+                                  concatDense, twoDimensional, dropout, depth,
+                                  class_neurons)
         layer = get_output(layer, concatBeforeOutput, outputs, classes,
-                           outputActivation,
-                           loss, twoDimensional)
+                           outputActivation, loss, twoDimensional, class_neurons)
         # Compiling and displaying model
         model = compile_model(inp, layer, learningRate, drawModel, loss, metric,
                               modelCompile)

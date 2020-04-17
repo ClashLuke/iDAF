@@ -123,7 +123,7 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
                                                   unroll, classes, inputDense,
                                                   twoDimensional, embedding,
                                                   class_neurons)
-        layer = get_hidden_layers(layer, layerCount, neuronList, leakyRelu, batchNorm,
+        layer = get_hidden_layers(layer, layer_count, neuronList, leakyRelu, batchNorm,
                                   concatDense, twoDimensional, dropout, depth,
                                   class_neurons)
         layer = get_output(layer, concatBeforeOutput, outputs, classes,

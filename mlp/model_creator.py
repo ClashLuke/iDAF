@@ -125,7 +125,7 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
                                                   class_neurons)
         layer = get_hidden_layers(layer, layerCount, neuronList, leakyRelu, batchNorm,
                                   concatDense, twoDimensional, dropout, depth,
-                                  class_neurons, local_l1, local_l2)
+                                  class_neurons)
         layer = get_output(layer, concatBeforeOutput, outputs, classes,
                            outputActivation, loss, twoDimensional, class_neurons)
         # Compiling and displaying model

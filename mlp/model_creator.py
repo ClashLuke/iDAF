@@ -37,23 +37,19 @@ def initialise_list(length, init_value, differing_value_position, differing_valu
 
 
 def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
-                      concat_dense, two_dimensional, dropout, depth, class_neurons,
-                      local_l1, local_l2):
-    def dense(in_layer):
-        """
-        Creates a new dense layer using keras' dense function. The parameters used
-        to create it are given in the parent function call.
-        This function exists as the initializer and the regularizer are both classes
-        which have to be freshly instantiated when creating a new layer.
-        :param in_layer: layer the new dense layer will be attached to in graph
-        :return: dense layer
-        """
-        return Dense(n,
-                     kernel_initializer=initializer(),
-                     kernel_constraint=L1L2(l1=local_l1, l2=local_l2))(in_layer)
-
-    for i in range(layer_count - 1):
-        n = neuron_list[i]
+                      concat_dense, two_dimensional, dropout, depth, class_neurons):
+    for neurons in neuron_list:
+        def dense(in_layer):
+            """
+            Creates a new dense layer using keras' dense function. The parameters used
+            to create it are given in the parent function call.
+            This function exists as the initializer and the regularizer are both classes
+            which have to be freshly instantiated when creating a new layer.
+            :param in_layer: layer the new dense layer will be attached to in graph
+            :return: dense layer
+            """
+            return Dense(neurons,
+                         kernel_initializer=initializer())(in_layer)
         prev_in = layer
         for _ in range(depth):
             key_layer = dense(layer)
@@ -86,7 +82,7 @@ def compile_model(inp, layer, learning_rate, draw_model, loss, metric, model_com
     if model_compile:
         model.compile(loss=loss,
                       optimizer=OPTIMIZER(lr=learning_rate,
-                                          weight_decay_rate=global_l2),
+                                          weight_decay_rate=1e-3),
                       metrics=[metric])
         model.summary()
         if draw_model:

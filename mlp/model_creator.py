@@ -97,7 +97,7 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
               concatBeforeOutput=True, drawModel=True, gpu=True,
               neuronList=None, indexIn=False, classNeurons=True,
               twoDimensional=True, embedding=False, class_neurons=True,
-              inputs=60, neuronsPerLayer=120, layerCount=4,
+              inputs=60, neurons_per_layer=120, layer_count=4,
               learningRate=0.005, classes=30, outputs=1, dropout=0.35,
               weightFolderName='MLP_Weights', outputActivation='softmax',
               local_l1=0.01, local_l2=0.01, global_l2=0.001,
@@ -107,10 +107,10 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
     if len(kwargs) > 0:
         print(f"Unused Keyword Arguments: {kwargs}")
     if neuronList is None:
-        neuronList = utils.get_neuron_list(neuronsPerLayer, layerCount, classNeurons,
+        neuronList = utils.get_neuron_list(neurons_per_layer, layer_count, classNeurons,
                                            classes)
     else:
-        neuronsPerLayer = neuronList[0]
+        neurons_per_layer = neuronList[0]
 
     if trainNewModel:
         # Input layer

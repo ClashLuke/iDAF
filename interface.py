@@ -1,5 +1,3 @@
-import itertools
-
 import numpy as np
 import tensorflow as tf
 
@@ -44,6 +42,9 @@ class CharNet:
                                'out_char_count':         512,
                                'change_per_keras_epoch': 0.25,
                                'steps':                  1000,
+                               'local_l1':               0.01,
+                               'local_l2':               0.01,
+                               'global_l2':              0.001,
                                'activation':             'gelu',
                                'weight_folder_name':     'MLP_Weights',
                                'inputGenerator':         'text',

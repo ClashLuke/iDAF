@@ -1,12 +1,13 @@
 from tensorflow.keras import Model
 from tensorflow.keras.initializers import orthogonal as initializer
 from tensorflow.keras.layers import (Add, BatchNormalization, Concatenate, Dense,
-                                     Embedding, Flatten, GaussianDropout, Input,
-                                     Multiply, Softmax, GlobalAveragePooling1D)
+                                     Embedding, Flatten, GaussianDropout,
+                                     GlobalAveragePooling1D, Input, Multiply, Softmax)
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
 from tensorflow_addons.layers import GELU
 from tensorflow_addons.optimizers import LAMB as OPTIMIZER
+from tensorflow.keras.regularizers import L1L2
 
 from . import utils
 
@@ -35,24 +36,31 @@ def initialise_list(length, init_value, differing_value_position, differing_valu
     return initial_list
 
 
-def get_input_layer(layer, inputs, classes, input_dense):
-    if input_dense:
-        layer = Dense(units=inputs, kernel_initializer=initializer())(layer)
-        layer = GELU()(layer)
-    return layer
-
-
 def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
-                      concat_dense, two_dimensional, dropout, depth, class_neurons):
+                      concat_dense, two_dimensional, dropout, depth, class_neurons,
+                      local_l1, local_l2):
+    def dense(in_layer):
+        """
+        Creates a new dense layer using keras' dense function. The parameters used
+        to create it are given in the parent function call.
+        This function exists as the initializer and the regularizer are both classes
+        which have to be freshly instantiated when creating a new layer.
+        :param in_layer: layer the new dense layer will be attached to in graph
+        :return: dense layer
+        """
+        return Dense(n,
+                     kernel_initializer=initializer(),
+                     kernel_constraint=L1L2(l1=local_l1, l2=local_l2))(in_layer)
+
     for i in range(layer_count - 1):
         n = neuron_list[i]
         prev_in = layer
         for _ in range(depth):
-            key_layer = Dense(n, kernel_initializer=initializer())(layer)
-            query_layer = Dense(n, kernel_initializer=initializer())(layer)
+            key_layer = dense(layer)
+            query_layer = dense(layer)
             value_layer = GELU()(key_layer)
-            value_layer = Dense(n, kernel_initializer=initializer())(value_layer)
-            value_layer = Softmax(axis=-1-class_neurons)(value_layer)
+            value_layer = dense(value_layer)
+            value_layer = Softmax(axis=-1 - class_neurons)(value_layer)
             key_layer = Multiply()([key_layer, value_layer])
             layer = Add()([query_layer, key_layer])
             layer = BatchNormalization(axis=1)(layer)
@@ -65,8 +73,6 @@ def get_hidden_layers(layer, layer_count, neuron_list, leaky_relu, batch_norm,
 
 def get_output(layer, concat_before_output, outputs, classes, output_activation, loss,
                two_dimensional, class_neurons):
-    if 'crossentropy' not in loss:
-        classes = 1
     if class_neurons:
         layer = GlobalAveragePooling1D()(layer)
     layer = Dense(units=256, activation=output_activation,
@@ -74,12 +80,13 @@ def get_output(layer, concat_before_output, outputs, classes, output_activation,
     return layer
 
 
-def compile_model(inp, layer, learning_rate, draw_model, loss, metric, model_compile):
+def compile_model(inp, layer, learning_rate, draw_model, loss, metric, model_compile,
+                  global_l2):
     model = Model(inputs=[inp], outputs=[layer])
     if model_compile:
         model.compile(loss=loss,
                       optimizer=OPTIMIZER(lr=learning_rate,
-                                          weight_decay_rate=1e-3),
+                                          weight_decay_rate=global_l2),
                       metrics=[metric])
         model.summary()
         if draw_model:
@@ -97,6 +104,7 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
               inputs=60, neuronsPerLayer=120, layerCount=4,
               learningRate=0.005, classes=30, outputs=1, dropout=0.35,
               weightFolderName='MLP_Weights', outputActivation='softmax',
+              local_l1=0.01, local_l2=0.01, global_l2=0.001,
               loss='sparse_categorical_crossentropy',
               metric='sparse_categorical_accuracy',
               depth=1, **kwargs):
@@ -121,12 +129,12 @@ def get_model(leakyRelu=True, batchNorm=True, trainNewModel=True,
                                                   class_neurons)
         layer = get_hidden_layers(layer, layerCount, neuronList, leakyRelu, batchNorm,
                                   concatDense, twoDimensional, dropout, depth,
-                                  class_neurons)
+                                  class_neurons, local_l1, local_l2)
         layer = get_output(layer, concatBeforeOutput, outputs, classes,
                            outputActivation, loss, twoDimensional, class_neurons)
         # Compiling and displaying model
         model = compile_model(inp, layer, learningRate, drawModel, loss, metric,
-                              modelCompile)
+                              modelCompile, global_l2)
     else:
         utils.get_previous_weights_from_gdrive(weightFolderName)
         last_used_model = utils.get_latest_model_name(weightFolderName)

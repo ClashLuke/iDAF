@@ -83,7 +83,7 @@ class CharNetConfig:
         self.load_model = False
         self.output_activation = "softmax"
         self.loss = "sparse_categorical_crossentropy"
-        self.model_folder = "mlp_weights-"
+        self.model_folder = "mlp_weights"
         with open(os.path.join(os.path.dirname(__file__), '..', 'LICENSE'), 'r') as f:
             self.test_string = f.read()
 

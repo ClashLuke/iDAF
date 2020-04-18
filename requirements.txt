@@ -1,2 +1,5 @@
 tensorflow>2.0
 numpy
+tensorflow-addons
+graphviz
+pydot

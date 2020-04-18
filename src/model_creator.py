@@ -111,9 +111,10 @@ class CharNet:
             tf.config.experimental_connect_to_cluster(cluster_resolver)
             tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
             strategy = tf.distribute.experimental.TPUStrategy(cluster_resolver)
-            self.dtype = 'int32'
         except ValueError:
             strategy = tf.distribute.MirroredStrategy()
+        else:
+            self.dtype = 'int32'
         if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():
             tfa_options.TF_ADDONS_PY_OPS = False  # TFA wont throw if it runs with CUDA.
         with strategy.scope():

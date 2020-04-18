@@ -17,6 +17,7 @@ class SlidingWindowGenerator(Sequence):
             dataset = np.frombuffer(dataset, np.uint8).astype(dtype)
         self.inputs = inputs
         self.batch_size = batch_size
+        self.base_batch = batch_size
         self.dataset = dataset
         self.dset_len = dataset.shape[0] - inputs
         self.output_indices = 0
@@ -37,11 +38,8 @@ class SlidingWindowGenerator(Sequence):
         return (self.dataset[self.input_indices + idx],
                 self.dataset[self.output_indices + idx])
 
-    def add_batch(self, batch):
-        self.batch_size += batch
-        self._set_indices()
-        self.len = self.dset_len // self.batch_size - 1
-
     def on_epoch_end(self):
         # A more robust linear weight decay, see https://arxiv.org/pdf/1711.00489.pdf
-        self.add_batch(self.batch_size)
+        self.batch_size += self.base_batch
+        self._set_indices()
+        self.len = self.dset_len // self.batch_size - 1

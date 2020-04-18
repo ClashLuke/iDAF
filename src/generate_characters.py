@@ -24,7 +24,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         for i in range(self.output_characters):
             inp = tf.concat(inp,
                             tf.math.argmax(model.predict(inp[i:].reshape(1, -1))[0]))
-        return ''.join(map(chr, inp[self.inputs:]))
+        return ''.join(map(chr, tf.make_ndarray(inp[self.inputs:])))
 
     def on_epoch_end(self, epoch, logs=None):
         """

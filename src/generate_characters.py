@@ -16,15 +16,16 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         self.output_characters = output_characters
         super().__init__()
 
-    def _generate_key(self, inp):
-        return np.argmax(self.model.predict(inp.reshape(1, -1))[0])
-
     def _generate_string(self):
         inp = self.input_string.copy()
+        model = self.model
+
+        def _generate_key(fn_input):
+            return np.argmax(model.predict(fn_input.reshape(1, -1))[0])
+
         for i in range(self.output_characters):
-            inp = np.append(inp, self._generate_key(inp[i:]))
-        out = ''.join(map(chr, inp[self.inputs:]))
-        return out
+            inp = np.append(inp, _generate_key(inp[i:]))
+        return ''.join(map(chr, inp[self.inputs:]))
 
     def on_epoch_end(self, epoch, logs=None):
         """

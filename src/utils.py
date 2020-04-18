@@ -3,15 +3,39 @@ import string
 
 import tensorflow as tf
 
+from . import text_generator
+
 
 def mount_drive():
     from google.colab import drive
     drive.mount('/content/gdrive')
 
 
-def get_dataset_from_gdrive(file_name):
-    os.system(''.join(['cp "/content/gdrive/My Drive/', file_name, '" .']))
+def search_dict(in_dict, key_list):
+    for key in in_dict:
+        if key in in_dict:
+            return in_dict[key]
+    return None
 
+
+def search_environment(key_list):
+    return search_dict(os.environ, key_list)
+
+
+def prepare_dataset(dataset, batch_size, inputs):
+    if isinstance(dataset, str):
+        with open(dataset, 'rb') as f:
+            dataset = f.read()
+    return text_generator.SlidingWindowGenerator(batch_size, dataset, inputs)
+
+
+def tpu_search():
+    return search_environment(['COLAB_TPU_ADDR', 'TPU_NAME'])
+
+
+def get_dataset_from_gdrive(gdrive_path, target_name):
+    mount_drive()
+    os.system(f'cp "/content/gdrive/My Drive/{gdrive_path}" {target_name}')
 
 def get_previous_weights_from_gdrive(weight_folder_name):
     os.system(''.join(['cp -r "/content/gdrive/My Drive/', weight_folder_name, '" .']))
@@ -93,10 +117,10 @@ turn off in a similar way as the red ones."""
 def get_tf_generator(python_generator, batch_size, outputs):
     output_shape = (outputs, 1) if outputs > 1 else (1,)
     tf_generator = tf.data.Dataset.from_generator(
-        generator=lambda: map(tuple, python_generator),
-        output_types=(tf.float32, tf.float32),
-        output_shapes=(tf.TensorShape((None,)), tf.TensorShape(output_shape))
-        )
+            generator=lambda: map(tuple, python_generator),
+            output_types=(tf.float32, tf.float32),
+            output_shapes=(tf.TensorShape((None,)), tf.TensorShape(output_shape))
+            )
     tf_generator = tf_generator.batch(batch_size)
     tf_generator = tf_generator.shuffle(16, reshuffle_each_iteration=True)
     tf_generator = tf_generator.repeat(batch_size)

@@ -2,12 +2,18 @@ import numpy as np
 from tensorflow.keras.utils import Sequence
 
 
-class Generator(Sequence):
-    def __init__(self, batch_size, dataset, outputs, index_in, inputs, steps,
-                 change_per_keras_epoch, embedding,
-                 base_batch=None):
+class SlidingWindowGenerator(Sequence):
+    """
+    Efficient dataset generator. Implements a sliding window over any given dataset.
+    Using a generator like this is especially useful if the dataset wouldn't fit in
+    memory otherwise.
+    When using a poor cpu with a strong accelerator, such as a TPU, it is possible that
+    the generation pipeline is too slow, even though it's already highly optimized. When
+    this happens, you should switch to a stronger CPU and increase the number of workers
+    during training.
+    """
+    def __init__(self, batch_size, dataset, inputs):
         self.inputs = inputs
-        self.base_batch = batch_size if base_batch is None else base_batch
         self.batch_size = batch_size
         self.dataset = dataset
         self.dset_len = dataset.shape[0] - inputs

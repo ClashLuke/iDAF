@@ -14,7 +14,7 @@ class SlidingWindowGenerator(Sequence):
     """
     def __init__(self, batch_size, dataset, inputs):
         if isinstance(dataset, bytes) or isinstance(dataset, bytearray):
-            dataset = np.frombuffer(dataset, np.uint8)
+            dataset = np.frombuffer(dataset, np.uint8).astype(np.int32)
         self.inputs = inputs
         self.batch_size = batch_size
         self.dataset = dataset

@@ -10,7 +10,8 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
 
     def __init__(self, input_string, inputs, output_characters):
         self.input_string = np.array([ord(input_string[i])
-                                      for i in range(inputs)])
+                                      for i in range(inputs)],
+                                     dtype=np.int32)
         self.inputs = inputs
         self.output_characters = output_characters
         super().__init__()

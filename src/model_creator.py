@@ -12,7 +12,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow_addons import options as tfa_options
 from tensorflow_addons.layers import GELU
 from tensorflow_addons.optimizers import LAMB as OPTIMIZER
-
+import numpy as np
 from . import config_object, utils
 from .generate_characters import GeneratorCallback
 
@@ -73,8 +73,10 @@ class CharNet:
                                                weight_decay_rate=1e-3),
                            metrics=self.config.metrics)
         self.model.summary()
-        self.model.train_on_batch(tf.range(self.config.inputs), tf.zeros(0))
-        self.model.predict_on_batch((tf.range(self.config.inputs), tf.zeros(0)))
+        data = (np.arange(self.config.inputs).reshape(1, self.config.inputs),
+                np.ones((1, 1)))
+        self.model.train_on_batch(*data)
+        self.model.predict_on_batch(data)
         tf.compat.v1.get_default_graph().finalize()
 
     def __init__(self, config=None, config_file_path=None):
@@ -120,8 +122,7 @@ class CharNet:
             self.dtype = 'int32'
         if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():
             tfa_options.TF_ADDONS_PY_OPS = False  # TFA wont throw if it runs with CUDA.
-        with strategy.scope():
-            self._init()
+        self._init()
 
     def load(self):
         """

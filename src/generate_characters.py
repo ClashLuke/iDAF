@@ -11,7 +11,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
     def __init__(self, input_string, inputs, output_characters, dtype):
         self.input_string = tf.convert_to_tensor(np.array([ord(input_string[i])
                                                            for i in range(inputs)],
-                                                          dtype=dtype))
+                                                          dtype=tf.int32))
         self.inputs = inputs
         self.output_characters = output_characters
         super().__init__()

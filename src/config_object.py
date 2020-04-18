@@ -73,7 +73,7 @@ class CharNetConfig:
         self.dropout = 0.3
         self.input_dropout = 0.1
         self.batch_size = 1024
-        self.learning_rate = 1e-4
+        self.learning_rate = 1e-3
         self.generated_characters = 512
         self.neuron_list = []
         self.block_depth = []

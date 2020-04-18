@@ -73,6 +73,9 @@ class CharNet:
                                                weight_decay_rate=1e-3),
                            metrics=self.config.metrics)
         self.model.summary()
+        self.model.train_on_batch(tf.range(self.config.inputs), tf.zeros(0))
+        self.model.predict_on_batch((tf.range(self.config.inputs), tf.zeros(0)))
+        tf.compat.v1.get_default_graph().finalize()
 
     def __init__(self, config=None, config_file_path=None):
         self.model = None
@@ -162,7 +165,7 @@ class CharNet:
         for i in range(epochs):
             self.model.fit(dataset,
                            initial_epoch=i,
-                           epochs=i+1,
+                           epochs=i + 1,
                            verbose=verbose,
                            use_multiprocessing=True,
                            workers=workers,

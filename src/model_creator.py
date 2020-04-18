@@ -74,14 +74,13 @@ class CharNet:
         self.model.summary()
 
     def __init__(self, config=None, config_file_path=None):
-        self.config = config_object.CharNetConfig()
         self.model = None
         if config_file_path is not None:
             import json
             with open(config_file_path, 'r') as configFile:
                 config = configFile.read()
             config = json.loads(config)
-        self.config.update(config)
+        self.config = config_object.CharNetConfig(config)
         if self.config.load_model:
             self.load()
         else:

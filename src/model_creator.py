@@ -141,7 +141,7 @@ class CharNet:
                                              self.config.inputs),
                        epochs=epochs,
                        verbose=verbose,
-                       multiprocessing=True,
+                       use_multiprocessing=True,
                        workers=workers,
                        callbacks=[ModelCheckpoint(os.path.join(self.config.model_folder,
                                                                '{epoch:03d}.hdf5'),

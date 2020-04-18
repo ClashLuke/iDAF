@@ -20,11 +20,12 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
     def _generate_string(self):
         inp = tf.identity(self.input_string)
         model = self.model
-
-        for i in range(self.output_characters):
-            inp = tf.concat(inp,
-                            tf.math.argmax(model.predict(inp[i:].reshape(1, -1))[0]))
-        return ''.join(map(chr, inp[self.inputs:].eval()))
+        with tf.compat.v1.Session() as sess:
+            for i in range(self.output_characters):
+                inp = tf.concat(inp,
+                                tf.math.argmax(model.predict(inp[i:].reshape(1, -1))[0]))
+            out = ''.join(map(chr, inp[self.inputs:].eval(session=sess)))
+        return out
 
     def on_epoch_end(self, epoch, logs=None):
         """

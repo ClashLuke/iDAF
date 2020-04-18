@@ -22,11 +22,11 @@ def search_environment(key_list):
     return search_dict(os.environ, key_list)
 
 
-def prepare_dataset(dataset, batch_size, inputs):
+def prepare_dataset(dataset, batch_size, inputs, dtype):
     if isinstance(dataset, str):
         with open(dataset, 'rb') as f:
             dataset = f.read()
-    return text_generator.SlidingWindowGenerator(batch_size, dataset, inputs)
+    return text_generator.SlidingWindowGenerator(batch_size, dataset, inputs, dtype)
 
 
 def tpu_search():

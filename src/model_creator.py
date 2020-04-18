@@ -76,6 +76,7 @@ class CharNet:
 
     def __init__(self, config=None, config_file_path=None):
         self.model = None
+        self.dtype = 'uint8'
         if config_file_path is not None:
             import json
             with open(config_file_path, 'r') as configFile:
@@ -110,6 +111,7 @@ class CharNet:
             tf.config.experimental_connect_to_cluster(cluster_resolver)
             tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
             strategy = tf.distribute.experimental.TPUStrategy(cluster_resolver)
+            self.dtype = 'int32'
         except ValueError:
             strategy = tf.distribute.MirroredStrategy()
         if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():

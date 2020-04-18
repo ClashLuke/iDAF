@@ -8,10 +8,10 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
     when the epoch ends.
     """
 
-    def __init__(self, input_string, inputs, output_characters):
+    def __init__(self, input_string, inputs, output_characters, dtype):
         self.input_string = np.array([ord(input_string[i])
                                       for i in range(inputs)],
-                                     dtype=np.int32)
+                                     dtype=dtype)
         self.inputs = inputs
         self.output_characters = output_characters
         super().__init__()

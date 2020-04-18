@@ -145,7 +145,8 @@ class CharNet:
         """
         dataset = utils.prepare_dataset(dataset,
                                         self.config.batch_size,
-                                        self.config.inputs)
+                                        self.config.inputs,
+                                        self.dtype)
         callbacks = [ModelCheckpoint(os.path.join(self.config.model_folder,
                                                   '{epoch:03d}.hdf5'),
                                      monitor='val_loss',
@@ -155,7 +156,8 @@ class CharNet:
                                      mode='auto'),
                      GeneratorCallback(self.config.test_string,
                                        self.config.inputs,
-                                       self.config.generated_characters)
+                                       self.config.generated_characters,
+                                       self.dtype)
                      ]
         for i in range(epochs):
             self.model.fit(dataset,

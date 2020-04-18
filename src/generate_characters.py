@@ -23,8 +23,10 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         with tf.compat.v1.Session() as sess:
             for i in range(self.output_characters):
                 inp = tf.concat(inp,
-                                tf.math.argmax(model.predict(tf.reshape(inp[i:],
-                                                                        (1, -1)))[0]))
+                                tf.math.argmax(
+                                        model.predict_on_batch((tf.reshape(inp[i:],
+                                                                           (1, -1))))[
+                                            0]))
             out = ''.join(map(chr, inp[self.inputs:].eval(session=sess)))
         return out
 

@@ -10,6 +10,7 @@ from tensorflow.keras.layers import (Add, BatchNormalization, Concatenate, Dense
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
 from tensorflow_addons.layers import GELU
+from tensorflow_addons import options as tfa_options
 from tensorflow_addons.optimizers import LAMB as OPTIMIZER
 
 from . import config_object, utils
@@ -103,6 +104,7 @@ class CharNet:
         it can find. Only if there is no GPU, it resorts to the CPU.
         :return:
         """
+        tfa_options.TF_ADDONS_PY_OPS = True
         try:
             cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver()
             tf.config.experimental_connect_to_cluster(cluster_resolver)
@@ -110,6 +112,8 @@ class CharNet:
             strategy = tf.distribute.experimental.TPUStrategy(cluster_resolver)
         except ValueError:
             strategy = tf.distribute.MirroredStrategy()
+        if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():
+            tfa_options.TF_ADDONS_PY_OPS = False  # TFA wont throw if it runs with CUDA.
         with strategy.scope():
             self._init()
 

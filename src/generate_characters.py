@@ -9,22 +9,21 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
     """
 
     def __init__(self, input_string, inputs, output_characters, dtype):
-        self.input_string = np.array([ord(input_string[i])
-                                      for i in range(inputs)],
-                                     dtype=dtype)
+        self.input_string = tf.convert_to_tensor(np.array([ord(input_string[i])
+                                                           for i in range(inputs)],
+                                                          dtype=dtype))
         self.inputs = inputs
         self.output_characters = output_characters
         super().__init__()
 
+    @tf.function(experimental_relax_shapes=True)
     def _generate_string(self):
         inp = self.input_string.copy()
         model = self.model
 
-        def _generate_key(fn_input):
-            return np.argmax(model.predict(fn_input.reshape(1, -1))[0])
-
         for i in range(self.output_characters):
-            inp = np.append(inp, _generate_key(inp[i:]))
+            inp = tf.concat(inp,
+                            tf.math.argmax(model.predict(inp[i:].reshape(1, -1))[0]))
         return ''.join(map(chr, inp[self.inputs:]))
 
     def on_epoch_end(self, epoch, logs=None):

@@ -9,8 +9,8 @@ from tensorflow.keras.layers import (Add, BatchNormalization, Concatenate, Dense
                                      Input, Multiply, Softmax)
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import plot_model
-from tensorflow_addons.layers import GELU
 from tensorflow_addons import options as tfa_options
+from tensorflow_addons.layers import GELU
 from tensorflow_addons.optimizers import LAMB as OPTIMIZER
 
 from . import config_object, utils
@@ -140,21 +140,25 @@ class CharNet:
                         to number of threads.
         :return: None
         """
-        self.model.fit(utils.prepare_dataset(dataset,
-                                             self.config.batch_size,
-                                             self.config.inputs),
-                       epochs=epochs,
-                       verbose=verbose,
-                       use_multiprocessing=True,
-                       workers=workers,
-                       callbacks=[ModelCheckpoint(os.path.join(self.config.model_folder,
-                                                               '{epoch:03d}.hdf5'),
-                                                  monitor='val_loss',
-                                                  verbose=1,
-                                                  save_best_only=False,
-                                                  save_weights_only=False,
-                                                  mode='auto'),
-                                  GeneratorCallback(self.config.test_string,
-                                                    self.config.inputs,
-                                                    self.config.generated_characters)
-                                  ])
+        dataset = utils.prepare_dataset(dataset,
+                                        self.config.batch_size,
+                                        self.config.inputs)
+        callbacks = [ModelCheckpoint(os.path.join(self.config.model_folder,
+                                                  '{epoch:03d}.hdf5'),
+                                     monitor='val_loss',
+                                     verbose=1,
+                                     save_best_only=False,
+                                     save_weights_only=False,
+                                     mode='auto'),
+                     GeneratorCallback(self.config.test_string,
+                                       self.config.inputs,
+                                       self.config.generated_characters)
+                     ]
+        for i in range(epochs):
+            self.model.fit(dataset,
+                           initial_epoch=i,
+                           epochs=i+1,
+                           verbose=verbose,
+                           use_multiprocessing=True,
+                           workers=workers,
+                           callbacks=callbacks)

@@ -34,7 +34,6 @@ class SlidingWindowGenerator(Sequence):
         return self.len
 
     def __getitem__(self, idx):
-        idx %= self.len
         return (self.dataset[self.input_indices + idx],
                 self.dataset[self.output_indices + idx])
 

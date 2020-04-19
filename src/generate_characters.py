@@ -29,7 +29,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
                                              0]),
                                          tf.int32), (1,))],
                                 0)
-            out = ''.join(map(chr, inp[self.inputs:].eval(self.input_string, session=sess)))
+            out = ''.join(map(chr, inp[self.inputs:].eval(session=sess)))
         return out
 
     def on_epoch_end(self, epoch, logs=None):

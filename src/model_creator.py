@@ -17,7 +17,7 @@ from . import config_object, utils
 from .generate_characters import GeneratorCallback
 
 
-class CharNet:
+class iDAF:
     """
     A deep, dense neural network based on the attention mechanism. Its shape is similar
     to that of a transformer without decoder layers.
@@ -88,7 +88,7 @@ class CharNet:
             with open(config_file_path, 'r') as configFile:
                 config = configFile.read()
             config = json.loads(config)
-        self.config = config_object.CharNetConfig(config)
+        self.config = config_object.ModelConfig(config)
         if self.config.load_model:
             self.load()
         else:

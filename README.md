@@ -1,10 +1,8 @@
-# 1. CharNet
-
-A multi-layer perceptron network for artificial text and character generation
+# 1. iDAF
 
 ## 1.1. Table of contents
 
-- [1. CharNet](#1-charnet)
+- [1. iDAF](#1-idaf)
   - [1.1. Table of contents](#11-table-of-contents)
   - [1.2. General](#12-general)
   - [1.3. Getting Started](#13-getting-started)
@@ -12,10 +10,14 @@ A multi-layer perceptron network for artificial text and character generation
     - [1.4.1. Description](#141-description)
     - [1.4.2. List](#142-list)
   - [1.5. Parameters](#15-parameters)
+  - [1.6. Technical](#16-technical)
+    - [1.6.1. Structure](#161-structure)
+    - [1.6.2. RNN](#162-rnn)
+    - [1.6.3. Transformer](#163-transformer)
 
 ## 1.2. General
 
-CharNet is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) network using using a dense feed-forward-network in which every layer is connected with all previous layers. Therefore CharNet is an application of the principles behind [GAU](https://github.com/ClashLuke/GAU) and [InDeDeNet](https://github.com/ClashLuke/InDeDeNet). \
+The insanely deep attention fabric (iDAF) is a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) network creating a dense fabric of attention blocks, with each block being connected with all previous blocks.\
 It acts as a humanly-readable example to show improvements compared to Transformers, RNNs and other state-of-the-art models for sequential data.\
 Various parameters are supported, allowing for high configurability. Note that all parameters already have tested and well-behaving default values, so huge amounts of tweaking are not necessary.
 
@@ -28,8 +30,8 @@ with high batch sizes and huge potential to overfit.
 If you're a hard-core user who wants to run it on their own machine, you should start with cloning this repository.
 
 ```BASH
-$ git clone https://github.com/ClashLuke/CharNet
-Cloning into 'CharNet'...
+$ git clone https://github.com/ClashLuke/iDAF
+Cloning into 'iDAF'...
 remote: Enumerating objects: 68, done.
 remote: Counting objects: 100% (68/68), done.
 remote: Compressing objects: 100% (44/44), done.
@@ -38,17 +40,17 @@ Receiving objects: 100% (763/763), 813.67 KiB | 355.00 KiB/s, done.
 Resolving deltas: 100% (512/512), done.
 ```
 
-Afterwords a python file or interpreter can be opened to first import the CharNet
+Afterwords a python file or interpreter can be opened to first import the iDAF
 interface and then run the training.
 
 ```PYTHON
-from CharNet import CharNet
-network = CharNet()
-network.train('CharNet/tinyshakespeare.txt')
+from iDAF import iDAF
+network = iDAF()
+network.train('iDAF/tinyshakespeare.txt')
 keras_model = network.model
 ```
 
-As depicted above, the production-ready Keras model can be extracted after training by accessing the .model attribute of the CharNet instance.  
+As depicted above, the production-ready Keras model can be extracted after training by accessing the .model attribute of the iDAF instance.  
 
 ## 1.4. Toy Datasets
 
@@ -90,3 +92,26 @@ If you want to use any of the datasets below, you could either download them to 
 | output_activation    | Activation function applied to the output. None (without quotes) means no activation, allowing linear regression.     | Str      | "softmax"                         |
 | loss                 | Error function the model tries to optimize.                                                                           | Str      | "sparse_categorical_crossentropy" |
 | model_folder         | Folder trained model snapshots get saved to.                                                                          | Str      | "mlp_weights"                     |
+
+## 1.6. Technical
+
+### 1.6.1. Structure
+
+The insanely deep attention fabric is model-space building on top of the [insanely deep dense network](https://github.com/ClashLuke/InDeDeNet) architecture, while adding key features from the gateless variant of the [gated attention unit](https://github.com/ClashLuke/GAU).\
+It consists of attention-blocks, shaped similarly to those of a transformer. However, the value-layer takes the output of the key-layer as an input, allowing for more transformations with a lower number of blocks.\
+Additionally, the number of dropout layers, normalization and activation layes is reduced to the bare minimum. This improves both the execution time and overall model performance.\
+Other than that, the model itself is not optimized for speed. For a potentially faster PyTorch implementation, visit the [GAU](https://github.com/ClashLuke/GAU). Do note however that both tensorflows static graph execution and XLA do a lot of optimization, rendering the improvements of a much more pipelined modul useless.
+
+### 1.6.2. RNN
+
+As the RNN is a building block, but the iDAF is a complete architecture, we will instead compare the iDAF to a sequence-to-sequence model using nothing but RNNs.\
+Compared to those, the iDAF has similar advantages as a transformer. The iDAF relies on parallelizable and pipelinable attention blocks, which themselves contain nothing but highly optimized, cheap matrix multiplications.\
+When comparing RNNs with transformers however, one immediately notices the extreme difference in depth. Each cell of an RNN is its own (recurrent) layer, meaning that an RNN usually has a hundred times more layers than a transformer.\
+The iDAF attempts to bridge this difference, by creating insanely deep attention fabrics.
+
+### 1.6.3. Transformer
+
+As mentioned above, the iDAF is significantly deeper than a transformer could be. Additionally, the iDAF uses a DenseNet architecture for its blocks. where each blocks outputs are connected to all previous outputs.
+This allows the iDAF to save on resources while reducing its abilities to overfit, as it doesn't require huge numbers of features, but instead relies mostly on depth.\
+[Google](https://ai.googleblog.com/2019/10/exploring-massively-multilingual.html) recently discovered that increasing the depth of a model reduces generally improves performance much more than increasing the width of the model would. They found that using wider models leads to a higher chance of memorization and therefore overfitting, which isn't ideal for language modeling.\
+The iDAF leverages those findings, to further improve upon the existing transformer model.

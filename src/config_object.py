@@ -1,8 +1,9 @@
 import os
 
-class CharNetConfig:
+
+class ModelConfig:
     """
-    A plain configuration object used in the CharNet class. It acts as a helper, so that
+    A plain configuration object used in the iDAF class. It acts as a helper, so that
     dictionaries don't have to be accessed, but instead, a simple class-based interface
     can be used.
     This reduces the number of magic strings, while improving maintainability and

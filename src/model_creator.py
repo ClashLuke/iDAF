@@ -75,6 +75,7 @@ class CharNet:
         self.model.summary()
         data = (np.arange(self.config.inputs).reshape(1, self.config.inputs),
                 np.ones((1, 1)))
+        # Freeze the model graph for improved performance and reduced RAM usage
         self.model.train_on_batch(*data)
         self.model.predict_on_batch(data)
         tf.compat.v1.get_default_graph().finalize()
@@ -122,7 +123,8 @@ class CharNet:
             self.dtype = 'int32'
         if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():
             tfa_options.TF_ADDONS_PY_OPS = False  # TFA wont throw if it runs with CUDA.
-        self._init()
+        with strategy.scope():
+            self._init()
 
     def load(self):
         """

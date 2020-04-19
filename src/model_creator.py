@@ -105,26 +105,15 @@ class CharNet:
 
     def new(self):
         """
-        Get a new model by first instantiating a distribution strategy and then
-        creating a new model under the strategies scope.
-        This function automatically uses TPUs if possible. If not, it uses up all GPUs
-        it can find. Only if there is no GPU, it resorts to the CPU.
+        This is a wrapper around the ._init function that creates a new model, so that
+        hardware accelerators can be used as efficiently as possible. Unfortunately
+        there currently are problems with distributed training, meaning that the wrapper
+        has to call the function, without "distributing" the model to a single GPU.
+        Currently we simply assume that tensorflow will pick the correct device (which
+        is not the case for TPUs).
         :return:
         """
-        tfa_options.TF_ADDONS_PY_OPS = True
-        try:
-            cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver()
-            tf.config.experimental_connect_to_cluster(cluster_resolver)
-            tf.tpu.experimental.initialize_tpu_system(cluster_resolver)
-            strategy = tf.distribute.experimental.TPUStrategy(cluster_resolver)
-        except ValueError:
-            strategy = tf.distribute.MirroredStrategy()
-        else:
-            self.dtype = 'int32'
-        if tf.config.list_physical_devices('GPU') and tf.test.is_built_with_cuda():
-            tfa_options.TF_ADDONS_PY_OPS = False  # TFA wont throw if it runs with CUDA.
-        with strategy.scope():
-            self._init()
+        self._init()
 
     def load(self):
         """

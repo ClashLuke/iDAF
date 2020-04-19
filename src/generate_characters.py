@@ -16,7 +16,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         self.output_characters = output_characters
         super().__init__()
 
-    @tf.function(experimental_relax_shapes=True)
+#    @tf.function(experimental_relax_shapes=True)
     def _generate_string(self):
         inp = self.input_string.copy()
         model = self.model

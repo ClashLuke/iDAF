@@ -141,7 +141,8 @@ class CharNet:
         dataset = utils.prepare_dataset(dataset,
                                         self.config.batch_size,
                                         self.config.inputs,
-                                        self.dtype)
+                                        self.dtype,
+                                        self.config.batch_decay)
         callbacks = [ModelCheckpoint(os.path.join(self.config.model_folder,
                                                   '{epoch:03d}.hdf5'),
                                      monitor='val_loss',

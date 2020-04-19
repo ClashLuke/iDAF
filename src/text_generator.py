@@ -12,12 +12,12 @@ class SlidingWindowGenerator(Sequence):
     this happens, you should switch to a stronger CPU and increase the number of workers
     during training.
     """
-    def __init__(self, batch_size, dataset, inputs, dtype):
+    def __init__(self, batch_size, dataset, inputs, dtype, decay=1):
         if isinstance(dataset, bytes) or isinstance(dataset, bytearray):
             dataset = np.frombuffer(dataset, np.uint8).astype(dtype)
         self.inputs = inputs
         self.batch_size = batch_size
-        self.base_batch = batch_size
+        self.base_batch = int(batch_size*decay)
         self.dataset = dataset
         self.dset_len = dataset.shape[0] - inputs
         self.output_indices = 0

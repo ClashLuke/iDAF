@@ -75,6 +75,7 @@ class CharNetConfig:
         self.batch_size = 1024
         self.learning_rate = 1e-3
         self.generated_characters = 512
+        self.batch_decay = 1
         self.neuron_list = []
         self.block_depth = []
         self.metrics = ['accuracy']

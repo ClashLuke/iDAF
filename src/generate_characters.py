@@ -18,9 +18,9 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
 
     @tf.function(experimental_relax_shapes=True)
     def _generate_string(self):
-        inp = tf.identity(self.input_string)
-        model = self.model
         with tf.compat.v1.Session() as sess:
+            inp = tf.identity(self.input_string)
+            model = self.model
             for i in range(self.output_characters):
                 inp = tf.concat([inp,
                                  tf.reshape(tf.cast(tf.math.argmax(
@@ -29,7 +29,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
                                              0]),
                                          tf.int32), (1,))],
                                 0)
-            out = ''.join(map(chr, inp[self.inputs:].eval(session=sess)))
+            out = ''.join(map(chr, inp[self.inputs:].eval(self.input_string, session=sess)))
         return out
 
     def on_epoch_end(self, epoch, logs=None):

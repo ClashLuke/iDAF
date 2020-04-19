@@ -9,27 +9,23 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
     """
 
     def __init__(self, input_string, inputs, output_characters, dtype):
-        self.input_string = tf.convert_to_tensor(np.array([ord(input_string[i])
-                                                           for i in range(inputs)],
-                                                          dtype=np.int32))
+        self.input_string = np.array([ord(input_string[i])
+                                      for i in range(inputs)],
+                                     dtype=np.int32)
         self.inputs = inputs
         self.output_characters = output_characters
         super().__init__()
 
     @tf.function(experimental_relax_shapes=True)
     def _generate_string(self):
-        with tf.compat.v1.Session() as sess:
-            inp = tf.identity(self.input_string)
-            model = self.model
-            for i in range(self.output_characters):
-                inp = tf.concat([inp,
-                                 tf.reshape(tf.cast(tf.math.argmax(
-                                         model.predict_on_batch((tf.reshape(inp[i:],
-                                                                            (1, -1))))[
-                                             0]),
-                                         tf.int32), (1,))],
-                                0)
-            out = ''.join(map(chr, inp[self.inputs:].eval(session=sess)))
+        inp = self.input_string.copy()
+        model = self.model
+        for i in range(self.output_characters):
+            inp = np.append(inp,
+                            np.argmax(model.predict_on_batch((inp[i:].reshape(1,
+                                                                              -1),))[
+                                          0]))
+        out = ''.join(map(chr, inp[self.inputs:]))
         return out
 
     def on_epoch_end(self, epoch, logs=None):

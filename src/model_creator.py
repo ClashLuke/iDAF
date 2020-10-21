@@ -25,8 +25,10 @@ class iDAF:
 
     def _init(self):
         inp = Input(shape=(self.config.inputs,))
-        layer = Embedding(256, self.config.classes)(
-                inp) if self.config.embedding else inp
+        if self.config.embedding:
+            layer = Embedding(256, self.config.classes, input_length=self.config.inputs)(inp)
+        else:
+            layer = inp
         if self.config.input_dropout:
             layer = GaussianDropout(self.config.input_dropout)(layer)
 
@@ -62,7 +64,7 @@ class iDAF:
                 layer = GELU()(layer)
             layer = Concatenate(axis=-1)([prev_in, layer])
 
-        if self.config.class_neurons:
+        if self.config.class_neurons and self.config.embedding:
             layer = GlobalAveragePooling1D()(layer)
         layer = Dense(units=256, activation=self.config.output_activation,
                       kernel_initializer=initializer())(layer)

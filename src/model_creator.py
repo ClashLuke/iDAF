@@ -90,6 +90,8 @@ class iDAF:
             with open(config_file_path, 'r') as configFile:
                 config = configFile.read()
             config = json.loads(config)
+        if not config:
+          config = {}
         config.update(config_kwargs)
         self.config = config_object.ModelConfig(config)
         if self.config.load_model:

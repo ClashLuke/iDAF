@@ -24,8 +24,8 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
             output_probabilities = model.predict_on_batch((inp.reshape(1, -1),))[0]
             possible_indices = np.arange(output_probabilities.shape[0])
             output_index = np.random.choice(possible_indices, p=output_probabilities)
-            inp = np.append(inp, output_index)[1:]               
-        out = ''.join(map(chr, inp))
+            inp = np.append(inp, output_index)            
+        out = ''.join(map(chr, inp[self.inputs:]))
         return out
 
     def on_epoch_end(self, epoch, logs=None):

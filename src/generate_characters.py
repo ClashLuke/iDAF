@@ -21,7 +21,7 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         inp = self.input_string.copy()
         model = self.model
         for i in range(self.output_characters):
-            output_probabilities = model.predict_on_batch((inp.reshape(1, -1),)[0]
+            output_probabilities = model.predict_on_batch((inp.reshape(1, -1),))[0]
             possible_indices = np.arange(output_probabilities.shape[0])
             output_index = np.random.choice(possible_indices, p=output_probabilities)
             inp = np.append(inp, output_index)[1:]               

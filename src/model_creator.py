@@ -75,8 +75,8 @@ class iDAF:
                                                weight_decay_rate=1e-3),
                            metrics=self.config.metrics)
         self.model.summary()
-        data = (np.arange(self.config.inputs).reshape(1, self.config.inputs),
-                np.ones((1, 1)))
+        data = (np.ones((self.config.batch_size, self.config.inputs)),
+                np.ones((self.config.batch_size, 1)))
         # Freeze the model graph for improved performance and reduced RAM usage
         self.model.train_on_batch(*data)
         self.model.predict_on_batch(data)

@@ -82,7 +82,7 @@ class iDAF:
         self.model.predict_on_batch(data)
         tf.compat.v1.get_default_graph().finalize()
 
-    def __init__(self, config=None, config_file_path=None):
+    def __init__(self, config=None, config_file_path=None, **config_kwargs):
         self.model = None
         self.dtype = 'uint8'
         if config_file_path is not None:
@@ -90,6 +90,7 @@ class iDAF:
             with open(config_file_path, 'r') as configFile:
                 config = configFile.read()
             config = json.loads(config)
+        config.update(config_kwargs)
         self.config = config_object.ModelConfig(config)
         if self.config.load_model:
             self.load()

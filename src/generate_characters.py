@@ -21,11 +21,11 @@ class GeneratorCallback(tf.keras.callbacks.Callback):
         inp = self.input_string.copy()
         model = self.model
         for i in range(self.output_characters):
-            inp = np.append(inp,
-                            np.argmax(model.predict_on_batch((inp[i:].reshape(1,
-                                                                              -1),))[
-                                          0]))
-        out = ''.join(map(chr, inp[self.inputs:]))
+            output_probabilities = model.predict_on_batch((inp.reshape(1, -1),)[0]
+            possible_indices = np.arange(output_probabilities.shape[0])
+            output_index = np.random.choice(possible_indices, p=output_probabilities)
+            inp = np.append(inp, output_index)[1:]               
+        out = ''.join(map(chr, inp))
         return out
 
     def on_epoch_end(self, epoch, logs=None):
